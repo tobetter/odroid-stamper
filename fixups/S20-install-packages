@@ -1,0 +1,8 @@
+#!/bin/sh
+
+apt update && apt upgrade -y
+apt install -y \
+	odroid-base \
+	@@DEFAULT_FLAVOUR_PACKAGES@@ \
+	@@DEFAULT_KERNEL_PACKAGE@@ \
+	@@DEFAULT_BOOTSCRIPT_PACKAGE@@

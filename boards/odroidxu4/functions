@@ -1,0 +1,22 @@
+get_machine_name() {
+	echo "Hardkernel Odroid XU4"
+}
+
+get_kernel_package() {
+	echo "linux-image-odroid-memeka"
+}
+
+get_bootscript_package() {
+	echo "bootscript-odroid-exynos5422"
+}
+
+get_reserved_sectors() {
+	echo 3072
+}
+
+download_uboot() {
+    url="https://api.github.com/repos/tobetter/u-boot/releases"
+    curl -s ${url} | grep odroid-xu3 \
+	| grep browser_download_url | cut -d'"' -f 4 | head -1 \
+	| wget -O ${1} -qi -
+}

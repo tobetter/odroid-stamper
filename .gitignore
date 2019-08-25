@@ -1,0 +1,7 @@
+.gitignore
+*.swp
+*.md5sum
+
+downloads/
+rootfs/
+out/

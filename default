@@ -1,0 +1,73 @@
+get_board() {
+    if [ -f /proc/device-tree/model ]; then
+        model=$(cat /proc/device-tree/model)
+        case ${model} in
+            "Hardkernel ODROID-N2")
+                echo "odroidn2"
+                ;;
+            *)
+                echo ""
+                ;;
+        esac
+    fi
+}
+
+get_arch() {
+    case ${1} in
+        odroidc2 | odroidn2)
+            echo "arm64"
+            ;;
+        odroidxu4)
+            echo "armhf"
+            ;;
+    esac
+}
+
+default_distro() {
+    [ -z ${DISTRO} ] && DISTRO="bionic"
+    echo ${DISTRO}
+}
+
+default_flavour() {
+    [ -z ${FLAVOUR} ] && FLAVOUR="minimal"
+    echo ${FLAVOUR}
+}
+
+default_target_device() {
+    echo ${TARGET_DEVICE}
+}
+
+allow_root_login() {
+    echo false
+}
+
+default_root_passwd() {
+    [ -z ${DEFAULT_ROOT_PASSWD} ] && DEFAULT_ROOT_PASSWD="odroid"
+    echo ${DEFAULT_ROOT_PASSWD}
+}
+
+default_user() {
+    [ -z ${DEFAULT_USER} ] && DEFAULT_USER="odroid"
+    echo ${DEFAULT_USER}
+}
+
+default_user_passwd() {
+    [ -z ${DEFAULT_PASSWD} ] && DEFAULT_PASSWD="odroid"
+    echo ${DEFAULT_PASSWD}
+}
+
+default_config() {
+    cat>${1}<<__EOF
+BOARD=$(get_board)
+ARCH=$(get_arch $(get_board))
+DISTRO=$(default_distro)
+FLAVOUR=$(default_flavour)
+TARGET_DEVICE=$(default_target_device)
+DEFAULT_USER=$(default_user)
+DEFAULT_PASSWD=$(default_user_passwd)
+DEFAULT_ROOT_PASSWD=$(default_root_passwd)
+ALLOW_ROOT_LOGIN=$(allow_root_login)
+__EOF
+}
+
+# vim: set ft=sh ts=4 sw=4 expandtab:

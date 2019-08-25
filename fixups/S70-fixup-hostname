@@ -1,0 +1,7 @@
+#!/bin/sh
+
+echo "I: set default hostname to @@DEFAULT_HOSTNAME@@"
+echo @@DEFAULT_HOSTNAME@@ > /etc/hostname
+
+sed -i "/127.0.1.1/d" /etc/hosts
+echo "127.0.1.1	@@DEFAULT_HOSTNAME@@" >> /etc/hosts

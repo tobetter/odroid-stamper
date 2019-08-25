@@ -1,0 +1,7 @@
+odroid-stamper		usr/sbin/
+functions			usr/share/odroid-stamper
+menu				usr/share/odroid-stamper
+boards				usr/share/odroid-stamper
+default				usr/share/odroid-stamper
+configs				usr/share/odroid-stamper
+fixups				usr/share/odroid-stamper

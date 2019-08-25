@@ -1,0 +1,33 @@
+#!/bin/sh
+
+get_uuid_rootfs() {
+	uuid=$(blkid --output export @@DEFAULT_DEV_ROOTFS@@ | \
+		grep ^UUID | cut -d'=' -f2)
+	echo ${uuid}
+}
+
+if [ -f /root/firstboot.sh ]; then
+	chmod +x /root/firstboot.sh
+	chown root:root /root/firstboot.sh
+
+	sed -i "s,@@UUID_ROOTFS@@,$(get_uuid_rootfs),g" /root/firstboot.sh
+fi
+
+cat <<__EOF | tee -a /lib/systemd/system/firstboot.service >/dev/null
+[Unit]
+Description=FirstBoot
+After=network.target
+Before=rc-local.service
+ConditionFileNotEmpty=/root/firstboot.sh
+
+[Service]
+ExecStart=/root/firstboot.sh
+ExecStartPost=/bin/mv /root/firstboot.sh /root/firstboot.sh.done
+Type=oneshot
+RemainAfterExit=no
+
+[Install]
+WantedBy=multi-user.target
+__EOF
+
+systemctl enable firstboot.service

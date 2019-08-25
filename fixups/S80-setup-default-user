@@ -1,0 +1,16 @@
+#!/bin/sh
+
+if [ "@@ALLOW_ROOT_LOGIN@@" = "true" ]; then
+	echo "I: set default root password"
+	echo "root:@@DEFAULT_ROOT_PASSWD@@" | chpasswd
+else
+	if ! adduser @@DEFAULT_USER@@ sudo >/dev/null 2>&1; then
+		echo "@@DEFAULT_USER@@ ALL=(ALL) ALL" >> /etc/sudoers
+	fi
+fi
+
+echo "I: create default user account"
+adduser --gecos @@DEFAULT_USER@@ --disabled-login @@DEFAULT_USER@@
+
+echo "I: set default user password"
+echo "@@DEFAULT_USER@@:@@DEFAULT_USER_PASSWD@@" | chpasswd

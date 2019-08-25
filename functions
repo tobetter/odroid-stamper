@@ -1,0 +1,381 @@
+rootfs_mnt=${TOPDIR}/rootfs
+fixups_dir=/var/fixups
+
+do_unmount() {
+    echo "I: unmounting devices..."
+
+    umount -f ${rootfs_mnt}/sys 2>/dev/null
+    umount -f ${rootfs_mnt}/proc 2>/dev/null
+    umount -f ${rootfs_mnt}/dev/pts 2>/dev/null
+    umount -f ${rootfs_mnt}/dev 2>/dev/null
+    umount -f ${rootfs_mnt}/boot 2>/dev/null
+    umount -f ${rootfs_mnt} 2>/dev/null
+    rm -rf ${rootfs_mnt}
+
+    if [ ! -b ${TARGET_DEVICE} ]; then
+        losetup -d ${LOOPBACK} 2>/dev/null
+    fi
+}
+
+cleanup() {
+    do_unmount
+}
+
+trap_ctrlc() {
+    echo "<Ctrl-C> is detected..."
+    do_unmount
+    exit 1
+}
+
+panic() {
+    echo "E: ${1}"
+    cleanup
+    exit 1
+}
+
+fixup_arch() {
+    case "${1}" in
+        arm64)
+            echo "aarch64"
+            ;;
+        armhf)
+            echo "arm"
+            ;;
+        *)
+            panic "Unknown architecture..."
+            ;;
+    esac
+}
+
+qemu_binary() {
+    if [ "x$(fixup_arch ${1})" != "x$(uname -m)" ]; then
+        echo "/usr/bin/qemu-$(fixup_arch ${ARCH})-static"
+    fi
+}
+
+ask_password() {
+    printf '%s\n' "$(dialog --output-fd 1 \
+        --passwordbox "Enter your sudo password" 12 50)" | sudo -Svp ''
+}
+
+get_part_boot() {
+    if [ ! -b ${TARGET_DEVICE} ]; then
+        echo "${LOOPBACK}p1"
+    else
+        echo "${TARGET_DEVICE}-part1"
+    fi
+}
+
+get_part_root() {
+    if [ ! -b ${TARGET_DEVICE} ]; then
+        echo "${LOOPBACK}p2"
+    else
+        echo "${TARGET_DEVICE}-part2"
+    fi
+}
+
+get_kernel_cmdline() {
+    uuid=$(blkid --output export $(get_part_root) | grep ^UUID)
+    [ "${uuid}" != "" ] && echo "root=${uuid} rootwait ro quiet"
+}
+
+get_kernel_cmdline_defaults() {
+    echo ""
+}
+
+get_flavour_packages() {
+    [ -f boards/${BOARD}/packages ] && \
+        DEFAULT_FLAVOUR_PACKAGES=`cat boards/${BOARD}/packages | \
+            sort | tr "\n" " "`
+    echo ${DEFAULT_FLAVOUR_PACKAGES}
+}
+
+get_lookback_device() {
+    echo `losetup -a | grep ${1} | cut -d':' -f1`
+}
+
+do_mount() {
+    local rootfs=${1}
+
+    echo "I: mounting to ${rootfs_mnt}"
+
+    umount ${rootfs_mnt} 2>/dev/null
+    mkdir -p ${rootfs_mnt}
+
+    if [ ! -b ${TARGET_DEVICE} ]; then
+        devs=$(get_lookback_device ${rootfs})
+        [ -z "${devs}" ] || losetup -d ${devs}
+
+        losetup -fP ${rootfs} || panic "failed to setup loopback image"
+        LOOPBACK=$(get_lookback_device ${rootfs})
+    fi
+
+    mkfs.ext2 -F -L BOOT $(get_part_boot) 2>/dev/null \
+        || panic "failed to create partition '$(get_part_boot)'"
+    mkfs.ext4 -F -L rootfs $(get_part_root) 2>/dev/null \
+        || panic "failed to create partition '$(get_part_root)'"
+
+    mount $(get_part_root) ${rootfs_mnt}
+    mkdir -p ${rootfs_mnt}/boot
+    mkdir -p ${rootfs_mnt}/dev
+    mkdir -p ${rootfs_mnt}/dev/pts
+    mkdir -p ${rootfs_mnt}/proc
+    mkdir -p ${rootfs_mnt}/sys
+
+    mount $(get_part_boot) ${rootfs_mnt}/boot
+    mount -o bind /dev ${rootfs_mnt}/dev
+    mount -o bind /dev/pts ${rootfs_mnt}/dev/pts
+    mount -o bind /proc ${rootfs_mnt}/proc
+    mount -o bind /sys ${rootfs_mnt}/sys
+}
+
+do_create_partition() {
+    local disk=${1}
+    local mbytes=${2}
+    local bootsize=256
+
+    if [ ! -b ${disk} ]; then
+        echo "I: creating the disk image file '${disk}' (${mbytes}MiB)"
+        dd if=/dev/zero bs=1M count=${mbytes} \
+            | pv -s $((${mbytes} * 1024 * 1024)) \
+            | dd of=${disk} >/dev/null
+    else
+        for d in `readlink -f ${disk}*`; do
+            umount -f ${d} 2>/dev/null
+        done
+
+        echo "I: removing the current partition table in '${disk}'"
+        dd if=/dev/zero of=${disk} bs=512 count=1 >/dev/null
+    fi
+
+    boot_pstart=$(get_reserved_sectors)
+    [ "x${boot_pstart}" = "x" ] && boot_pstart=2048
+    boot_pend=$((${boot_pstart} + ${bootsize} * 1024 * 1024 / 512 - 1))
+
+    [ "${BASH_VERSION}" = "" ] || BACKSLASH_ESCAPE="-e"
+
+    echo "I: creating a partition table to '${disk}'"
+    echo ${BACKSLASH_ESCAPE} \
+        "n\np\n\n${boot_pstart}\n${boot_pend}\n" \
+        "n\np\n\n$((${boot_pend} + 1))\n\nw\n" \
+        | fdisk ${disk} >/dev/null
+#    sleep 1
+    partprobe
+}
+
+do_extract() {
+    local tarball=${1}
+    [ -f ${tarball} ] || panic "missing file ${tarball}"
+
+    echo "I: extracting ${tarball} to ${rootfs_mnt}..."
+    pv ${tarball} \
+        | tar xzf - --strip-component=1 -C ${rootfs_mnt} \
+            || panic "E: error while extracting"
+}
+
+do_preinstall() {
+    echo "I: running preinstall scripts and copy default files..."
+    mkdir -p ${rootfs_mnt}${fixups_dir}
+    cp -a fixups/* ${rootfs_mnt}${fixups_dir}
+
+    FIXUPS=`ls -A1 ${rootfs_mnt}${fixups_dir}/*`
+    for fixup in ${FIXUPS}; do
+        sed -i \
+            -e "s,@@DEFAULT_BOARD@@,${BOARD},g" \
+            -e "s,@@DEFAULT_HOSTNAME@@,${DISTRO}-${FLAVOUR},g" \
+            -e "s,@@DEFAULT_FLAVOUR_PACKAGES@@,$(get_flavour_packages),g" \
+            -e "s,@@DEFAULT_KERNEL_PACKAGE@@,$(get_kernel_package),g" \
+            -e "s,@@DEFAULT_BOOTSCRIPT_PACKAGE@@,$(get_bootscript_package),g" \
+            -e "s,@@DEFAULT_MACHINE_NAME@@,$(get_machine_name),g" \
+            -e "s,@@LINUX_KERNEL_CMDLINE@@,$(get_kernel_cmdline),g" \
+            -e "s,@@LINUX_KERNEL_CMDLINE_DEFAULTS@@,$(get_kernel_cmdline_defaults),g" \
+            -e "s,@@DEFAULT_DEV_BOOT@@,$(get_part_boot),g" \
+            -e "s,@@DEFAULT_DEV_ROOTFS@@,$(get_part_root),g" \
+            -e "s,@@ALLOW_ROOT_LOGIN@@,$(allow_root_login),g" \
+            -e "s,@@DEFAULT_ROOT_PASSWD@@,$(default_root_passwd),g" \
+            -e "s,@@DEFAULT_USER@@,$(default_user),g" \
+            -e "s,@@DEFAULT_USER_PASSWD@@,$(default_user_passwd),g" \
+            ${fixup}
+    done
+
+    QEMU_BINARY=$(qemu_binary ${ARCH})
+
+    if [ ! "x${QEMU_BINARY}" = "x" ]; then
+        cp ${QEMU_BINARY} ${rootfs_mnt}/${QEMU_BINARY} || panic "error"
+    fi
+
+    cp -a overlay/root/firstboot.sh ${rootfs_mnt}/root/
+    cp -a overlay/boot/boot-logo.bmp.gz ${rootfs_mnt}/boot/
+}
+
+do_postinstall() {
+    echo "I: removing preinstall scripts..."
+    if [ ! "x${QEMU_BINARY}" = "x" ]; then
+        rm -f ${rootfs_mnt}/${QEMU_BINARY}
+    fi
+    rm -rf ${rootfs_mnt}${fixups_dir}
+}
+
+do_cleanup() {
+    rm -f ${rootfs_mnt}/SHA256SUMS
+    rm -rf ${rootfs_mnt}/boot/filesystem.*
+}
+
+get_install_fixups() {
+    echo `ls -A1 ${rootfs_mnt}${fixups_dir}/S* | sort`
+}
+
+do_run_fixups() {
+    for fixup in $(get_install_fixups); do
+        chroot ${rootfs_mnt} ${QEMU_BINARY} \
+            /bin/sh ${fixups_dir}/$(basename ${fixup}) || \
+                panic "error when running the fixup"
+    done
+}
+
+do_query_latest_tarball() {
+    local host_url=${1}
+    local arch=${2}
+    local codename=${3}
+    local flavour=${4}
+
+    echo $(lynx -dump -listonly ${host_url}/tarball/${arch}/${codename}/ | \
+        grep tar.gz | grep ${flavour} | sort -r | head -n 1 | \
+        awk '{print $2}')
+}
+
+do_download_tarball() {
+    local url=${1}
+    local tarball=${2}
+    local download=true
+
+    [ "x${url}" = "x" ] && panic "unknown url file"
+    [ "x${tarball}" = "x" ] && panic "unknown tarball file"
+
+    if [ -f ${tarball} ]; then
+        wget ${url%.tar.gz}.md5sums.txt --quiet -O .foo.md5sums.txt || \
+            panic "failed to download MD5SUM file '${rul}'"
+        hash_remote=$(cat .foo.md5sums.txt | \
+            grep $(basename ${tarball}) | awk '{print $1}')
+        hash_local=$(md5sum ${tarball} | awk '{print $1}')
+        if [ "${hash_remote}" = "${hash_local}" ]; then
+            download=false
+        else
+            rm -f ${tarball}
+        fi
+    fi
+
+    if [ "${download}" = true ]; then
+        wget ${url} -O ${tarball} || \
+            panic "failed to download tarball '${url}'"
+    fi
+}
+
+do_create_image() {
+    local baseimage=${1}
+    local tarball=${2}
+
+    [ "x${baseimage}" = "x" ] && paninc "no given image file name"
+    [ "x${tarball}" = "x" ] && paninc "no given tarball"
+    [ "x${EXTRA_SPACE}" = "x" ] && EXTRA_SPACE=0
+
+    echo "I: calculating the minimal space for root file system"
+    local bytes=$(zcat ${tarball} | wc -c)
+    bytes=$((${bytes} + $((${EXTRA_SPACE} * 1048576))))
+
+    do_create_partition ${baseimage} $(($((${bytes} + 1048575)) / 1048576))
+    do_mount ${baseimage}
+    do_extract ${tarball}
+    do_preinstall
+    do_run_fixups
+    do_postinstall
+    do_cleanup
+}
+
+do_flash_bootloader() {
+    local disk=${1}
+    local uboot_tarball=${download_dir}/u-boot.tar.gz
+
+    echo "I: Downloading U-boot binaries"
+    download_uboot ${uboot_tarball} \
+            || panic "failed to download bootloader release"
+    rm -rf ${download_dir}/sd_fuse
+    tar xzvf ${uboot_tarball} -C ${download_dir} || false
+    if [ -f ${download_dir}/sd_fuse/sd_fusing.sh ]; then
+        (cd ${download_dir}/sd_fuse;
+            sed -i "/eject/d" ./sd_fusing.sh;
+            chmod +x ./sd_fusing.sh;
+            ./sd_fusing.sh ${disk} 2>/dev/null
+        )
+    fi
+}
+
+do_finalize_image() {
+    local disk=${1}
+    local osimage=${2}
+
+    [ "x${PUBLISH}" = "xtrue" ] && COMPRESS=true
+
+    if [ -f ${disk} ]; then
+        echo "I: finalizing OS image - '${osimage}'"
+        mv -f ${disk} ${osimage} || panic "failed to target image file"
+        if [ "x${COMPRESS}" = "xtrue" ]; then
+            echo "I: compressing OS image to ${osimage}"
+            xz ${osimage} || panic "failed to create compressed image file"
+            osimage=${osimage}.xz
+        fi
+        md5sum ${osimage} > ${osimage}.md5sum
+    fi
+}
+
+do_custom_installer() {
+    local download_dir=${1}
+    local out_dir=${2}
+
+    mkdir -p ${download_dir} ${out_dir}
+
+    echo "I: querying decent base files for ${ARCH}/${DISTRO}/${FLAVOUR}"
+    url=$(do_query_latest_tarball http://ppa.linuxfactory.or.kr/images \
+        ${ARCH} ${DISTRO} ${FLAVOUR})
+    [ "x${url}" = "x" ] && panic "Invalid URL - ${url}"
+
+    tarball=${download_dir}/$(basename ${url})
+    do_download_tarball ${url} ${tarball}
+    do_create_image ${TARGET_DEVICE} ${tarball}
+
+    case $(readlink -f ${TARGET_DEVICE}) in
+        /dev/sd*)
+            echo "W: bootloader won't be flashed to USB storage"
+            ;;
+        *)
+            if [ -b ${TARGET_DEVICE} ]; then
+                disk=${TARGET_DEVICE}
+            else
+                disk=${LOOPBACK}
+            fi
+            do_flash_bootloader ${disk}
+            do_finalize_image ${TARGET_DEVICE} ${OUTFILE}.img
+
+            if [ "x${PUBLISH}" = "xtrue" ]; then
+                do_publish "192.168.0.2" \
+                    "/srv/ppa.linuxfactory.or.kr/html/images/raw" \
+                    ${OUTFILE}
+            fi
+            ;;
+    esac
+}
+
+do_publish() {
+    local host=${1}
+    local dir=${2}/${ARCH}/${DISTRO}
+    local osimage=${3}
+
+    files=`ls ${osimage}.*`
+    if [ ! "x${files}" = "x" ]; then
+        ssh ${host} mkdir -p ${dir} && \
+            scp ${files} ${host}:/${dir} || \
+            panic "failed to connect to remote server"
+    fi
+}
+
+# vim: set ft=sh ts=4 sw=4 expandtab:

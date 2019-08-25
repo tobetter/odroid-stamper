@@ -1,0 +1,145 @@
+do_finish() {
+    echo ${BOARD}
+    echo ${DISTRO}-${FLAVOUR}
+    if [ ! -f configs/${DISTRO}-${FLAVOUR} ]; then
+        echo XXX
+    fi
+    exit 0
+}
+
+do_menu_target() {
+    local n=1
+    local DEVICE_LIST="File 0"
+
+    for disk in $(ls /dev/disk/by-id | grep -v '\-part*' | grep 'mmc\|usb'); do
+        DEVICE_LIST="${DEVICE_LIST} ${disk} ${n}"
+        n=$((n+1))
+    done
+
+    CHOICE=$(dialog --clear --title "Devices" \
+        --menu "X" 16 70 10 \
+        ${DEVICE_LIST} \
+        2>&1 >/dev/tty)
+    ret=$?
+    if [ ${ret} = 0 ]; then
+        if [ -b /dev/disk/by-id/${CHOICE} ]; then
+#           TARGET_DEVICE=$(readlink -f /dev/disk/by-id/${CHOICE})
+            TARGET_DEVICE="/dev/disk/by-id/${CHOICE}"
+        else
+            TARGET_DEVICE=${out_dir}/binary.img
+        fi
+    fi
+}
+
+do_menu_board() {
+    CHOICE=$(dialog --clear --title "Target model" \
+        --menu "X" 15 70 10 \
+        "odroidc2" "Hardkernel ODROID-C2" \
+        "odroidxu4" "Hardkernel ODROID-XU4" \
+        "odroidn2" "Hardkernel ODROID-N2" \
+        2>&1 >/dev/tty)
+
+    ret=$?
+    if [ ${ret} = 0 ]; then
+        BOARD=${CHOICE}
+        case ${BOARD} in
+            odroidc2)
+                ARCH=arm64
+                ;;
+            odroidxu4)
+                ARCH=armhf
+                ;;
+            odroidn2)
+                ARCH=arm64
+                ;;
+        esac
+    fi
+}
+
+do_menu_distro() {
+    CHOICE=$(dialog --clear --title "Ubuntu distribution" \
+        --menu "X" 15 70 10 \
+        "bionic" "Ubuntu Bionic (18.04)" \
+        "disco" "Ubuntu Disco (19.04)" \
+        2>&1 >/dev/tty)
+
+    ret=$?
+    if [ ${ret} = 0 ]; then
+        DISTRO=${CHOICE}
+    fi
+}
+
+do_menu_flavour() {
+    CHOICE=$(dialog --clear --title "Ubuntu flavour" \
+            --menu "X" 15 70 10 \
+            "minimal" "Minimal" \
+            "gnome-desktop" "GNOME" \
+            "lxde-desktop" "LXDE" \
+            "mate-desktop" "MATE" \
+            "xfce4-desktop" "XFCE" \
+            2>&1 >/dev/tty)
+
+    ret=$?
+    if [ ${ret} = 0 ]; then
+        FLAVOUR=${CHOICE}
+    fi
+}
+
+do_menu_root_passwd() {
+    DEFAULT_ROOT_PASSWD=$(dialog --title "Default root password" --clear \
+        --inputbox "Enter the password of root" 8 60 \
+        ${DEFAULT_ROOT_PASSWD} 2>&1 >/dev/tty)
+}
+
+do_menu_default_user() {
+    DEFAULT_USER=$(dialog --title "Default user account" --clear \
+        --inputbox "Enter the default account " 8 60 \
+        ${DEFAULT_USER} 2>&1 >/dev/tty)
+}
+
+do_menu_default_user_passwd() {
+    DEFAULT_PASSWD=$(dialog --title "Default user password" --clear \
+        --inputbox "Enter the password of default account " 8 60 \
+        ${DEFAULT_PASSWD} 2>&1 >/dev/tty)
+}
+
+do_menu() {
+    while true; do
+        IMAGE_FILE=ubuntu-${DISTRO}-${FLAVOUR}-${BOARD}-`date +%Y%m%d`
+        CHOICE=$(dialog --clear --backtitle "ODROID-STAMPER" \
+                --title "Custom Ubuntu Recipe" \
+                --extra-button --extra-label "Done" \
+                --menu "Please customize the installation." 15 70 10 \
+                0 "Target (${TARGET_DEVICE})" \
+                1 "Board (${BOARD})" \
+                2 "Distro (${DISTRO})" \
+                3 "Flavour (${FLAVOUR})" \
+                4 "Password of root" \
+                5 "Default user" \
+                6 "Password of default user" \
+                2>&1 >/dev/tty)
+
+        ret=$?
+        if [ ${ret} = 3 ]; then
+            clear
+            default_config ${DEFAULT_CONFIG}
+            OUTFILE=${out_dir}/${IMAGE_FILE}
+            break
+        elif [ ${ret} = 0 ]; then
+            case ${CHOICE} in
+                0)  do_menu_target "Target";;
+                1)  do_menu_board "Board";;
+                2)  do_menu_distro "Distro";;
+                3)  do_menu_flavour "Flavour";;
+                4)  do_menu_root_passwd;;
+                5)  do_menu_default_user;;
+                6)  do_menu_default_user_passwd;;
+            esac
+        else
+            clear
+            exit 1
+        fi
+    done
+}
+
+# vim: set ft=sh ts=4 sw=4 expandtab:
