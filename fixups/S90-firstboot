@@ -1,16 +1,10 @@
 #!/bin/sh
 
-get_uuid_rootfs() {
-	uuid=$(blkid --output export @@DEFAULT_DEV_ROOTFS@@ | \
-		grep ^UUID | cut -d'=' -f2)
-	echo ${uuid}
-}
-
 if [ -f /root/firstboot.sh ]; then
 	chmod +x /root/firstboot.sh
 	chown root:root /root/firstboot.sh
 
-	sed -i "s,@@UUID_ROOTFS@@,$(get_uuid_rootfs),g" /root/firstboot.sh
+	sed -i "s,@@UUID_ROOTFS@@,@@DEFAULT_DEV_ROOTFS@@,g" /root/firstboot.sh
 fi
 
 cat <<__EOF | tee -a /lib/systemd/system/firstboot.service >/dev/null

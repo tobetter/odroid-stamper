@@ -1,0 +1,8 @@
+#!/bin/sh
+
+apt autoremove -y
+truncate -s 0 /etc/machine-id
+
+apt clean
+
+rm -f /etc/flash-kernel/machine

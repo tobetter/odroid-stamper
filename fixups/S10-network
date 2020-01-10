@@ -1,6 +1,5 @@
 #!/bin/sh
 
 cat>/etc/resolv.conf<<__EOF
-nameserver 8.8.8.8
-nameserver 8.8.4.4
+nameserver 127.0.0.53
 __EOF

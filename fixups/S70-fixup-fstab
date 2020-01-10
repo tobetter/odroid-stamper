@@ -1,20 +1,16 @@
 #!/bin/sh
 
-uuid_boot=$(blkid --output export @@DEFAULT_DEV_BOOT@@ | grep ^UUID)
-uuid_root=$(blkid --output export @@DEFAULT_DEV_ROOTFS@@ | grep ^UUID)
+sed -i "/ \/boot /d" /etc/fstab
+sed -i "/ \/ /d" /etc/fstab
 
-sed -i "/LABEL=\"rootfs\"/d" /etc/fstab
-sed -i "/LABEL=\"BOOT\"/d" /etc/fstab
-
-if [ "x${uuid_root}" != "x" ]; then
+if [ "x@@DEFAULT_DEV_ROOTFS@@" != "x" ]; then
 	cat <<__EOF | tee -a /etc/fstab >/dev/null
-${uuid_root} /     ext4 rw,relatime,data=ordered 0 0
+UUID="@@DEFAULT_DEV_ROOTFS@@" /     ext4 rw,relatime,data=ordered 0 0
 __EOF
 fi
 
-if [ "x${uuid_boot}" != "x" ]; then
+if [ "x@@DEFAULT_DEV_BOOT@@" != "x" ]; then
 	cat <<__EOF | tee -a /etc/fstab >/dev/null
-${uuid_boot} /boot ext2 rw,relatime,errors=continue 0 0
+UUID="@@DEFAULT_DEV_BOOT@@" /boot ext2 rw,relatime,errors=continue 0 0
 __EOF
 fi
-

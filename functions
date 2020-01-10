@@ -1,29 +1,32 @@
+boot_mnt=${TOPDIR}/boot
 rootfs_mnt=${TOPDIR}/rootfs
-fixups_dir=/var/fixups
+fixups_dir=/host/fixups
 
 do_unmount() {
     echo "I: unmounting devices..."
+
+    if [ ! -b ${TARGET_DEVICE} ]; then
+        if [ "x${LOOPBACK}" != "x" ]; then
+            losetup -d ${LOOPBACK} 2>/dev/null
+        fi
+    fi
 
     umount -f ${rootfs_mnt}/sys 2>/dev/null
     umount -f ${rootfs_mnt}/proc 2>/dev/null
     umount -f ${rootfs_mnt}/dev/pts 2>/dev/null
     umount -f ${rootfs_mnt}/dev 2>/dev/null
     umount -f ${rootfs_mnt}/boot 2>/dev/null
-    umount -f ${rootfs_mnt} 2>/dev/null
-    rm -rf ${rootfs_mnt}
-
-    if [ ! -b ${TARGET_DEVICE} ]; then
-        losetup -d ${LOOPBACK} 2>/dev/null
-    fi
 }
 
 cleanup() {
     do_unmount
+    umount -f ${boot_mnt} ${rootfs_mnt} 2>/dev/null
+    rm -rf ${boot_mnt} ${rootfs_mnt}
 }
 
 trap_ctrlc() {
     echo "<Ctrl-C> is detected..."
-    do_unmount
+    cleanup
     exit 1
 }
 
@@ -74,11 +77,6 @@ get_part_root() {
     fi
 }
 
-get_kernel_cmdline() {
-    uuid=$(blkid --output export $(get_part_root) | grep ^UUID)
-    [ "${uuid}" != "" ] && echo "root=${uuid} rootwait ro quiet"
-}
-
 get_kernel_cmdline_defaults() {
     echo ""
 }
@@ -95,34 +93,15 @@ get_lookback_device() {
 }
 
 do_mount() {
-    local rootfs=${1}
-
     echo "I: mounting to ${rootfs_mnt}"
 
-    umount ${rootfs_mnt} 2>/dev/null
-    mkdir -p ${rootfs_mnt}
-
-    if [ ! -b ${TARGET_DEVICE} ]; then
-        devs=$(get_lookback_device ${rootfs})
-        [ -z "${devs}" ] || losetup -d ${devs}
-
-        losetup -fP ${rootfs} || panic "failed to setup loopback image"
-        LOOPBACK=$(get_lookback_device ${rootfs})
-    fi
-
-    mkfs.ext2 -F -L BOOT $(get_part_boot) 2>/dev/null \
-        || panic "failed to create partition '$(get_part_boot)'"
-    mkfs.ext4 -F -L rootfs $(get_part_root) 2>/dev/null \
-        || panic "failed to create partition '$(get_part_root)'"
-
-    mount $(get_part_root) ${rootfs_mnt}
     mkdir -p ${rootfs_mnt}/boot
     mkdir -p ${rootfs_mnt}/dev
     mkdir -p ${rootfs_mnt}/dev/pts
     mkdir -p ${rootfs_mnt}/proc
     mkdir -p ${rootfs_mnt}/sys
 
-    mount $(get_part_boot) ${rootfs_mnt}/boot
+    mount -o bind ${boot_mnt} ${rootfs_mnt}/boot
     mount -o bind /dev ${rootfs_mnt}/dev
     mount -o bind /dev/pts ${rootfs_mnt}/dev/pts
     mount -o bind /proc ${rootfs_mnt}/proc
@@ -131,13 +110,18 @@ do_mount() {
 
 do_create_partition() {
     local disk=${1}
-    local mbytes=${2}
-    local bootsize=256
+    local boot_blk=$((${2} * 1024 * 1024 / 512 - 1))
+    local root_blk=$(du --block-size=512 ${rootfs_mnt} | tail -1 | awk '{print $1}')
+
+    boot_pstart=$(get_reserved_sectors)
+    [ "x${boot_pstart}" = "x" ] && boot_pstart=2048
+
+    local blocks=$((${boot_pstart} + ${boot_blk} + ${root_blk} + 81920 * 4))
 
     if [ ! -b ${disk} ]; then
-        echo "I: creating the disk image file '${disk}' (${mbytes}MiB)"
-        dd if=/dev/zero bs=1M count=${mbytes} \
-            | pv -s $((${mbytes} * 1024 * 1024)) \
+        echo "I: creating the disk image file '${disk}' ($((${blocks} * 512))KiB)"
+        dd if=/dev/zero bs=512 count=${blocks} \
+            | pv -s $((${blocks} * 512 * 1024))k \
             | dd of=${disk} >/dev/null
     else
         for d in `readlink -f ${disk}*`; do
@@ -148,9 +132,7 @@ do_create_partition() {
         dd if=/dev/zero of=${disk} bs=512 count=1 >/dev/null
     fi
 
-    boot_pstart=$(get_reserved_sectors)
-    [ "x${boot_pstart}" = "x" ] && boot_pstart=2048
-    boot_pend=$((${boot_pstart} + ${bootsize} * 1024 * 1024 / 512 - 1))
+    boot_pend=$((${boot_pstart} + ${boot_blk}))
 
     [ "${BASH_VERSION}" = "" ] || BACKSLASH_ESCAPE="-e"
 
@@ -159,8 +141,23 @@ do_create_partition() {
         "n\np\n\n${boot_pstart}\n${boot_pend}\n" \
         "n\np\n\n$((${boot_pend} + 1))\n\nw\n" \
         | fdisk ${disk} >/dev/null
-#    sleep 1
     partprobe
+
+    if [ ! -b ${disk} ]; then
+        losetup -fP ${disk} || panic "failed to setup loopback image"
+        LOOPBACK=$(get_lookback_device ${disk})
+        echo ${LOOPBACK}
+    fi
+
+    UUID_BOOT=$(grep " /boot " ${rootfs_mnt}/etc/fstab | cut -d' ' -f1 | cut -d'=' -f2 | tr -d '"')
+    UUID_ROOT=$(grep " / " ${rootfs_mnt}/etc/fstab | cut -d' ' -f1 | cut -d'=' -f2 | tr -d '"')
+
+    sudo mkfs.ext2 -F -L BOOT -U ${UUID_BOOT} \
+        -d ${boot_mnt} $(get_part_boot) 2>/dev/null \
+        || panic "failed to create partition '$(get_part_boot)'"
+    sudo mkfs.ext4 -F -L rootfs -U ${UUID_ROOT} \
+        -d ${rootfs_mnt} $(get_part_root) 2>/dev/null \
+        || panic "failed to create partition '$(get_part_root)'"
 }
 
 do_extract() {
@@ -174,6 +171,9 @@ do_extract() {
 }
 
 do_preinstall() {
+    local UUID_BOOT=$(uuidgen)
+    local UUID_ROOT=$(uuidgen)
+
     echo "I: running preinstall scripts and copy default files..."
     mkdir -p ${rootfs_mnt}${fixups_dir}
     cp -a fixups/* ${rootfs_mnt}${fixups_dir}
@@ -187,10 +187,10 @@ do_preinstall() {
             -e "s,@@DEFAULT_KERNEL_PACKAGE@@,$(get_kernel_package),g" \
             -e "s,@@DEFAULT_BOOTSCRIPT_PACKAGE@@,$(get_bootscript_package),g" \
             -e "s,@@DEFAULT_MACHINE_NAME@@,$(get_machine_name),g" \
-            -e "s,@@LINUX_KERNEL_CMDLINE@@,$(get_kernel_cmdline),g" \
+            -e "s,@@LINUX_KERNEL_CMDLINE@@,root=UUID=${UUID_ROOT} rootwait ro quiet,g" \
             -e "s,@@LINUX_KERNEL_CMDLINE_DEFAULTS@@,$(get_kernel_cmdline_defaults),g" \
-            -e "s,@@DEFAULT_DEV_BOOT@@,$(get_part_boot),g" \
-            -e "s,@@DEFAULT_DEV_ROOTFS@@,$(get_part_root),g" \
+            -e "s,@@DEFAULT_DEV_BOOT@@,${UUID_BOOT},g" \
+            -e "s,@@DEFAULT_DEV_ROOTFS@@,${UUID_ROOT},g" \
             -e "s,@@ALLOW_ROOT_LOGIN@@,$(allow_root_login),g" \
             -e "s,@@DEFAULT_ROOT_PASSWD@@,$(default_root_passwd),g" \
             -e "s,@@DEFAULT_USER@@,$(default_user),g" \
@@ -277,19 +277,19 @@ do_create_image() {
 
     [ "x${baseimage}" = "x" ] && paninc "no given image file name"
     [ "x${tarball}" = "x" ] && paninc "no given tarball"
-    [ "x${EXTRA_SPACE}" = "x" ] && EXTRA_SPACE=0
 
-    echo "I: calculating the minimal space for root file system"
-    local bytes=$(zcat ${tarball} | wc -c)
-    bytes=$((${bytes} + $((${EXTRA_SPACE} * 1048576))))
+    umount ${boot_mnt} ${rootfs_mnt} 2>/dev/null
+    rm -rf ${boot_mnt} ${rootfs_mnt}
+    mkdir -p ${boot_mnt} ${rootfs_mnt}
 
-    do_create_partition ${baseimage} $(($((${bytes} + 1048575)) / 1048576))
-    do_mount ${baseimage}
     do_extract ${tarball}
+    do_mount
     do_preinstall
     do_run_fixups
     do_postinstall
     do_cleanup
+    do_unmount
+    do_create_partition ${baseimage} 256
 }
 
 do_flash_bootloader() {
