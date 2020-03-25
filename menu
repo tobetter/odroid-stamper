@@ -61,6 +61,7 @@ do_menu_distro() {
         --menu "X" 15 70 10 \
         "bionic" "Ubuntu Bionic (18.04)" \
         "disco" "Ubuntu Disco (19.04)" \
+        "focal" "Ubuntu Focal (20.04)" \
         2>&1 >/dev/tty)
 
     ret=$?
