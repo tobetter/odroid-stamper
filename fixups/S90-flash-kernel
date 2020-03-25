@@ -3,8 +3,4 @@
 echo flash-kernel flash-kernel/linux_cmdline string @@LINUX_KERNEL_CMDLINE@@  | \
 	     debconf-set-selections
 
-cat>/etc/default/flash-kernel<<__EOF
-LINUX_KERNEL_CMDLINE="@@LINUX_KERNEL_CMDLINE@@"
-LINUX_KERNEL_CMDLINE_DEFAULTS="@@LINUX_KERNEL_CMDLINE_DEFAULTS@@"
-__EOF
-/usr/sbin/flash-kernel --machine "@@DEFAULT_MACHINE_NAME@@"
+/usr/sbin/flash-kernel

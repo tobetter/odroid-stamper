@@ -1,2 +1,11 @@
 #!/bin/sh
 
+cat>/etc/default/flash-kernel<<__EOF
+LINUX_KERNEL_CMDLINE="@@LINUX_KERNEL_CMDLINE@@"
+LINUX_KERNEL_CMDLINE_DEFAULTS="@@LINUX_KERNEL_CMDLINE_DEFAULTS@@"
+__EOF
+
+mkdir -p /etc/flash-kernel
+cat>/etc/flash-kernel/machine<<__EOF
+@@DEFAULT_MACHINE_NAME@@
+__EOF

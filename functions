@@ -214,6 +214,7 @@ do_postinstall() {
         rm -f ${rootfs_mnt}/${QEMU_BINARY}
     fi
     rm -rf ${rootfs_mnt}${fixups_dir}
+    rm -f /etc/flash-kernel/machine
 }
 
 do_cleanup() {
