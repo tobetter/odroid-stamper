@@ -37,6 +37,7 @@ do_menu_board() {
         "odroidc2" "Hardkernel ODROID-C2" \
         "odroidxu4" "Hardkernel ODROID-XU4" \
         "odroidn2" "Hardkernel ODROID-N2" \
+        "odroidgo2" "Hardkernel ODROID-GO2" \
         2>&1 >/dev/tty)
 
     ret=$?
@@ -50,6 +51,9 @@ do_menu_board() {
                 ARCH=armhf
                 ;;
             odroidn2)
+                ARCH=arm64
+                ;;
+            odroidgo2)
                 ARCH=arm64
                 ;;
         esac
