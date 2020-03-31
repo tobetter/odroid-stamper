@@ -176,7 +176,9 @@ do_preinstall() {
 
     echo "I: running preinstall scripts and copy default files..."
     mkdir -p ${rootfs_mnt}${fixups_dir}
-    cp -a ${TOPDIR}/fixups/* ${rootfs_mnt}${fixups_dir}
+
+    [ -d ${TOPDIR}/fixups ] && rsync -a ${TOPDIR}/fixups/* ${rootfs_mnt}/${fixups_dir}
+    [ -d ${WORKDIR}/fixups ] && rsync -a ${WORKDIR}/fixups/* ${rootfs_mnt}/${fixups_dir}
 
     FIXUPS=`ls -A1 ${rootfs_mnt}${fixups_dir}/*`
     for fixup in ${FIXUPS}; do
@@ -204,8 +206,8 @@ do_preinstall() {
         cp ${QEMU_BINARY} ${rootfs_mnt}/${QEMU_BINARY} || panic "error"
     fi
 
-    cp -a ${TOPDIR}/overlay/root/firstboot.sh ${rootfs_mnt}/root/
-    cp -a ${TOPDIR}/overlay/boot/boot-logo.bmp.gz ${rootfs_mnt}/boot/
+    [ -d ${TOPDIR}/overlay ] && rsync -a ${TOPDIR}/overlay/* ${rootfs_mnt}/
+    [ -d ${WORKDIR}/overlay ] && rsync -a ${WORKDIR}/overlay/* ${rootfs_mnt}/
 }
 
 do_postinstall() {
