@@ -6,3 +6,4 @@ default				usr/share/odroid-stamper
 configs				usr/share/odroid-stamper
 fixups				usr/share/odroid-stamper
 overlay				usr/share/odroid-stamper
+examples			usr/share/odroid-stamper

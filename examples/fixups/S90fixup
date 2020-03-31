@@ -1,0 +1,4 @@
+#!/bin/sh
+
+echo "You are fixed up" >> /usr/bin/fixme
+chown root:root /usr/bin/fixme
