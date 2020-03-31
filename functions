@@ -1,5 +1,5 @@
-boot_mnt=${TOPDIR}/boot
-rootfs_mnt=${TOPDIR}/rootfs
+boot_mnt=${WORKDIR}/boot
+rootfs_mnt=${WORKDIR}/rootfs
 fixups_dir=/host/fixups
 
 do_unmount() {
@@ -176,7 +176,7 @@ do_preinstall() {
 
     echo "I: running preinstall scripts and copy default files..."
     mkdir -p ${rootfs_mnt}${fixups_dir}
-    cp -a fixups/* ${rootfs_mnt}${fixups_dir}
+    cp -a ${TOPDIR}/fixups/* ${rootfs_mnt}${fixups_dir}
 
     FIXUPS=`ls -A1 ${rootfs_mnt}${fixups_dir}/*`
     for fixup in ${FIXUPS}; do
@@ -204,8 +204,8 @@ do_preinstall() {
         cp ${QEMU_BINARY} ${rootfs_mnt}/${QEMU_BINARY} || panic "error"
     fi
 
-    cp -a overlay/root/firstboot.sh ${rootfs_mnt}/root/
-    cp -a overlay/boot/boot-logo.bmp.gz ${rootfs_mnt}/boot/
+    cp -a ${TOPDIR}/overlay/root/firstboot.sh ${rootfs_mnt}/root/
+    cp -a ${TOPDIR}/overlay/boot/boot-logo.bmp.gz ${rootfs_mnt}/boot/
 }
 
 do_postinstall() {
@@ -214,7 +214,6 @@ do_postinstall() {
         rm -f ${rootfs_mnt}/${QEMU_BINARY}
     fi
     rm -rf ${rootfs_mnt}${fixups_dir}
-    rm -f /etc/flash-kernel/machine
 }
 
 do_cleanup() {

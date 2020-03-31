@@ -4,13 +4,13 @@
 
 ODROID_STAMPER_DIR="/usr/share/odroid-stamper"
 
-#TOPDIR=${ODROID_STAMPER_CHECKOUT:-${ODROID_STAMPER_DIR}}
-TOPDIR=$PWD
+TOPDIR=${ODROID_STAMPER_CHECKOUT:-${ODROID_STAMPER_DIR}}
+WORKDIR=$PWD
 
-DEFAULT_CONFIG=${TOPDIR}/.config
+DEFAULT_CONFIG=${WORKDIR}/.config
 
 download_dir="/var/cache/odroid-stamper/downloads"
-out_dir=${PWD}
+out_dir=${WORKDIR}
 
 . ${TOPDIR}/menu
 . ${TOPDIR}/default
