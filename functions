@@ -197,6 +197,7 @@ do_preinstall() {
             -e "s,@@DEFAULT_ROOT_PASSWD@@,$(default_root_passwd),g" \
             -e "s,@@DEFAULT_USER@@,$(default_user),g" \
             -e "s,@@DEFAULT_USER_PASSWD@@,$(default_user_passwd),g" \
+            -e "s,@@DEFAULT_DISTRO@@,${DISTRO},g" \
             ${fixup}
     done
 

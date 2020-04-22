@@ -109,9 +109,23 @@ do_menu_default_user_passwd() {
         ${DEFAULT_PASSWD} 2>&1 >/dev/tty)
 }
 
+distro_version() {
+    case $1 in
+        bionic)
+            echo "18.04"
+            ;;
+        disco)
+            echo "19.04"
+            ;;
+        focal)
+            echo "20.04"
+            ;;
+    esac
+}
+
 do_menu() {
     while true; do
-        IMAGE_FILE=ubuntu-${DISTRO}-${FLAVOUR}-${BOARD}-`date +%Y%m%d`
+        IMAGE_FILE=ubuntu-$(distro_version ${DISTRO})-${FLAVOUR}-${BOARD}-`date +%Y%m%d`
         CHOICE=$(dialog --clear --backtitle "ODROID-STAMPER" \
                 --title "Custom Ubuntu Recipe" \
                 --extra-button --extra-label "Done" \
