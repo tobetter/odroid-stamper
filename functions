@@ -278,8 +278,8 @@ do_create_image() {
     local baseimage=${1}
     local tarball=${2}
 
-    [ "x${baseimage}" = "x" ] && paninc "no given image file name"
-    [ "x${tarball}" = "x" ] && paninc "no given tarball"
+    [ "x${baseimage}" = "x" ] && panic "no given image file name"
+    [ "x${tarball}" = "x" ] && panic "no given tarball"
 
     umount ${boot_mnt} ${rootfs_mnt} 2>/dev/null
     rm -rf ${boot_mnt} ${rootfs_mnt}
