@@ -201,6 +201,10 @@ do_preinstall() {
             ${fixup}
     done
 
+    if [ "x${INTERNAL}" = "x" ]; then
+        rm -f ${rootfs_mnt}${fixups_dir}/S00-internal-repository
+    fi
+
     QEMU_BINARY=$(qemu_binary ${ARCH})
 
     if [ ! "x${QEMU_BINARY}" = "x" ]; then
@@ -217,6 +221,7 @@ do_postinstall() {
         rm -f ${rootfs_mnt}/${QEMU_BINARY}
     fi
     rm -rf ${rootfs_mnt}${fixups_dir}
+    rm -rf ${rootfs_mnt}/etc/apt/sources.list.d/ppa_linuxfactory_or_kr.list
 }
 
 do_cleanup() {

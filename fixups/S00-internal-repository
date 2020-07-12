@@ -1,0 +1,11 @@
+#!/bin/sh
+
+INTERNAL_APT=/etc/apt/sources.list.d/ppa_linuxfactory_or_kr.list
+
+if [ -f ${INTERNAL_APT} ]; then
+	sed -i "/internal/d" ${INTERNAL_APT}
+fi
+
+cat>>${INTERNAL_APT}<<__EOF
+deb http://ppa.linuxfactory.or.kr focal internal
+__EOF
