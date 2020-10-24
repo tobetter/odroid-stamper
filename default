@@ -38,7 +38,7 @@ default_distro() {
 }
 
 default_flavour() {
-    [ -z ${FLAVOUR} ] && FLAVOUR="minimal"
+    [ -z ${FLAVOUR} ] && FLAVOUR="server"
     echo ${FLAVOUR}
 }
 

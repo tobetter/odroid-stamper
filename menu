@@ -79,7 +79,7 @@ do_menu_distro() {
 do_menu_flavour() {
     CHOICE=$(dialog --clear --title "Ubuntu flavour" \
             --menu "X" 15 70 10 \
-            "minimal" "Minimal" \
+            "server" "Server" \
             "gnome-desktop" "GNOME" \
             "lxde-desktop" "LXDE" \
             "mate-desktop" "MATE" \
