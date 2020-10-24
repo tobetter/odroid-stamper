@@ -1,0 +1,22 @@
+get_machine_name() {
+	echo "Hardkernel ODROID-HC4"
+}
+
+get_kernel_package() {
+	echo "linux-image-generic"
+}
+
+get_bootscript_package() {
+	echo "bootscript-odroidc4"
+}
+
+get_reserved_sectors() {
+	echo 2048
+}
+
+download_uboot() {
+    url="https://api.github.com/repos/hardkernel/u-boot/releases"
+    curl -s ${url} | grep browser_download_url | cut -d'"' -f 4 \
+	| grep u-boot-odroidc4 | head -1 \
+	| wget -O ${1} -qi -
+}
