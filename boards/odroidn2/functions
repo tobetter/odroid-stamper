@@ -16,7 +16,7 @@ get_reserved_sectors() {
 
 download_uboot() {
     url="https://api.github.com/repos/hardkernel/u-boot/releases"
-    curl -s ${url} | grep odroidn2 \
-	| grep browser_download_url | cut -d'"' -f 4 | head -1 \
+    curl -s ${url} | grep browser_download_url | cut -d'"' -f 4 \
+	| grep u-boot-odroidn2 | head -1 \
 	| wget -O ${1} -qi -
 }
