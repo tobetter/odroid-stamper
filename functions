@@ -81,11 +81,17 @@ get_kernel_cmdline_defaults() {
     echo ""
 }
 
+get_packages() {
+    [ -f ${1} ] && cat ${1}
+}
+
 get_flavour_packages() {
-    [ -f boards/${BOARD}/packages ] && \
-        DEFAULT_FLAVOUR_PACKAGES=`cat boards/${BOARD}/packages | \
-            sort | tr "\n" " "`
-    echo ${DEFAULT_FLAVOUR_PACKAGES}
+    local pkgs=""
+
+    pkgs="${pkgs} $(get_packages configs/${DISTRO}-${FLAVOUR}.packages)"
+    pkgs="${pkgs} $(get_packages boards/${BOARD}/packages)"
+
+    echo ${pkgs} | tr " " "\n" | sort | uniq | tr "\n" " "
 }
 
 get_lookback_device() {
