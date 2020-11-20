@@ -7,7 +7,11 @@ PATH=/sbin:/usr/sbin:/bin:/usr/bin
 
 rootdev=`blkid -U @@UUID_ROOTFS@@`
 
-dev=${rootdev%??}
+case ${rootdev} in
+	/dev/mmcblk*) dev=${rootdev%??} ;;
+	*) dev=${rootdev%?} ;;
+esac
+
 lba_start=`fdisk -l ${dev} | grep p2 | awk '{print $2}'`
 lba_finish=$((`fdisk -l ${dev} | grep Disk | grep sectors | awk '{printf $7}'` - 2048))
 
