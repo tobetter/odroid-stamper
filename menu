@@ -69,6 +69,7 @@ do_menu_distro() {
         "bionic" "Ubuntu Bionic (18.04)" \
         "disco" "Ubuntu Disco (19.04)" \
         "focal" "Ubuntu Focal (20.04)" \
+        "groovy" "Ubuntu Groovy (20.10)" \
         2>&1 >/dev/tty)
 
     ret=$?
@@ -121,6 +122,9 @@ distro_version() {
             ;;
         focal)
             echo "20.04"
+            ;;
+        groovy)
+            echo "20.10"
             ;;
     esac
 }
