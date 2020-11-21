@@ -339,6 +339,9 @@ do_finalize_image() {
             osimage=${osimage}.xz
         fi
         md5sum ${osimage} > ${osimage}.md5sum
+
+        xz ${osimage}
+        md5sum ${osimage}.xz > ${osimage}.xz.md5sum
     fi
 }
 
