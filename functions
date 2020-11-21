@@ -114,6 +114,10 @@ do_mount() {
     mount -o bind /sys ${rootfs_mnt}/sys
 }
 
+get_uuid_by_path() {
+    grep " ${1} " ${rootfs_mnt}/etc/fstab | cut -d' ' -f1 | cut -d'=' -f2 | tr -d '"'
+}
+
 do_create_partition() {
     local disk=${1}
     local boot_blk=$((${2} * 1024 * 1024 / 512 - 1))
@@ -155,8 +159,8 @@ do_create_partition() {
         echo ${LOOPBACK}
     fi
 
-    UUID_BOOT=$(grep " /boot " ${rootfs_mnt}/etc/fstab | cut -d' ' -f1 | cut -d'=' -f2 | tr -d '"')
-    UUID_ROOT=$(grep " / " ${rootfs_mnt}/etc/fstab | cut -d' ' -f1 | cut -d'=' -f2 | tr -d '"')
+    UUID_BOOT=$(get_uuid_by_path "/boot")
+    UUID_ROOT=$(get_uuid_by_path "/")
 
     sudo mkfs.ext2 -F -L BOOT -U ${UUID_BOOT} \
         -d ${boot_mnt} $(get_part_boot) 2>/dev/null \
