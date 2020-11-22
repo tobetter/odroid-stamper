@@ -346,6 +346,8 @@ do_finalize_image() {
 
         xz ${osimage}
         md5sum ${osimage}.xz > ${osimage}.xz.md5sum
+
+        sed -i -r "s/ .*\/(.+)/  \1/g" ${osimage}.md5sum ${osimage}.xz.md5sum
     fi
 }
 
