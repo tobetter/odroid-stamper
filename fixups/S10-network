@@ -1,5 +1,7 @@
 #!/bin/sh
 
+mkdir -p /run/systemd/resolve
+
 cat>/etc/resolv.conf<<__EOF
 nameserver 127.0.0.53
 __EOF
