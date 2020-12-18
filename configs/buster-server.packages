@@ -1,0 +1,5 @@
+sudo
+openssh-server
+fdisk
+parted
+neofetch
