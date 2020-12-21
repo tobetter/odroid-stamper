@@ -3,3 +3,5 @@ openssh-server
 fdisk
 parted
 neofetch
+net-tools
+netplan.io
