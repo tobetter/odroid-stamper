@@ -204,7 +204,6 @@ do_preinstall() {
             -e "s,@@DEFAULT_DEV_BOOT@@,${UUID_BOOT},g" \
             -e "s,@@DEFAULT_DEV_ROOTFS@@,${UUID_ROOT},g" \
             -e "s,@@ALLOW_ROOT_LOGIN@@,$(allow_root_login),g" \
-            -e "s,@@DEFAULT_ROOT_PASSWD@@,$(default_root_passwd),g" \
             -e "s,@@DEFAULT_USER@@,$(default_user),g" \
             -e "s,@@DEFAULT_USER_PASSWD@@,$(default_user_passwd),g" \
             -e "s,@@DEFAULT_DISTRO@@,${DISTRO},g" \

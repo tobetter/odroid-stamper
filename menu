@@ -96,12 +96,6 @@ do_menu_flavour() {
     fi
 }
 
-do_menu_root_passwd() {
-    DEFAULT_ROOT_PASSWD=$(dialog --title "Default root password" --clear \
-        --inputbox "Enter the password of root" 8 60 \
-        ${DEFAULT_ROOT_PASSWD} 2>&1 >/dev/tty)
-}
-
 do_menu_default_user() {
     DEFAULT_USER=$(dialog --title "Default user account" --clear \
         --inputbox "Enter the default account " 8 60 \
@@ -162,9 +156,8 @@ do_menu() {
                 1 "Board (${BOARD})" \
                 2 "Distro (${DISTRO})" \
                 3 "Flavour (${FLAVOUR})" \
-                4 "Password of root" \
-                5 "Default user" \
-                6 "Password of default user" \
+                4 "Default user" \
+                5 "Password of default user" \
                 2>&1 >/dev/tty)
 
         ret=$?
@@ -179,9 +172,8 @@ do_menu() {
                 1)  do_menu_board "Board";;
                 2)  do_menu_distro "Distro";;
                 3)  do_menu_flavour "Flavour";;
-                4)  do_menu_root_passwd;;
-                5)  do_menu_default_user;;
-                6)  do_menu_default_user_passwd;;
+                4)  do_menu_default_user;;
+                5)  do_menu_default_user_passwd;;
             esac
         else
             clear
