@@ -9,3 +9,9 @@ mkdir -p /etc/flash-kernel
 cat>/etc/flash-kernel/machine<<__EOF
 @@DEFAULT_MACHINE_NAME@@
 __EOF
+
+cat>/etc/apt/apt.conf.d/99debconf<<__EOF
+Dpkg::Options {
+  "--force-confnew";
+};
+__EOF
