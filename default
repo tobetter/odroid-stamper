@@ -64,9 +64,11 @@ default_user_passwd() {
 }
 
 default_config() {
+    [ "x${BOARD}" = "x" ] && BOARD=$(get_board)
+
     cat>${1}<<__EOF
-BOARD=$(get_board)
-ARCH=$(get_arch $(get_board))
+BOARD=${BOARD}
+ARCH=$(get_arch ${BOARD})
 DISTRO=$(default_distro)
 FLAVOUR=$(default_flavour)
 TARGET_DEVICE=$(default_target_device)
