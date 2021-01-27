@@ -90,6 +90,11 @@ get_flavour_packages() {
 
     pkgs="${pkgs} $(get_packages configs/${DISTRO}-${FLAVOUR}.packages)"
     pkgs="${pkgs} $(get_packages boards/${BOARD}/packages)"
+    [ -f custom/${CUSTOMOS}/packages ] &&
+        pkgs="${pkgs} $(get_packages custom/${CUSTOMOS}/packages)"
+
+    echo ${pkgs}
+    exit 1
 
     echo ${pkgs} | tr " " "\n" | sort | uniq | tr "\n" " "
 }
@@ -189,6 +194,7 @@ do_preinstall() {
 
     [ -d ${TOPDIR}/fixups ] && rsync -a ${TOPDIR}/fixups/* ${rootfs_mnt}/${fixups_dir}
     [ -d ${WORKDIR}/fixups ] && rsync -a ${WORKDIR}/fixups/* ${rootfs_mnt}/${fixups_dir}
+    [ -d custom/${CUSTOMOS}/fixups ] && rsync -a custom/${CUSTOMOS}/fixups/* ${rootfs_mnt}/${fixups_dir}
 
     FIXUPS=`ls -A1 ${rootfs_mnt}${fixups_dir}/*`
     for fixup in ${FIXUPS}; do

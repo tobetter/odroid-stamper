@@ -108,46 +108,9 @@ do_menu_default_user_passwd() {
         ${DEFAULT_PASSWD} 2>&1 >/dev/tty)
 }
 
-distro() {
-    case $1 in
-        bionic | disco | focal | groovy)
-            echo "ubuntu"
-            ;;
-        buster | bullseye)
-            echo "debian"
-            ;;
-        *)
-            echo "unknown"
-            ;;
-    esac
-}
-
-distro_version() {
-    case $1 in
-        bionic)
-            echo "18.04"
-            ;;
-        disco)
-            echo "19.04"
-            ;;
-        focal)
-            echo "20.04"
-            ;;
-        groovy)
-            echo "20.10"
-            ;;
-        buster)
-            echo "buster"
-            ;;
-        bullseye)
-            echo "bullseye"
-            ;;
-    esac
-}
-
 do_menu() {
     while true; do
-        IMAGE_FILE=$(distro ${DISTRO})-$(distro_version ${DISTRO})-${FLAVOUR}-${BOARD}-`date +%Y%m%d`
+        IMAGE_FILE=$(image_file ${DISTRO} ${FLAVOUR} ${BOARD})
         CHOICE=$(dialog --clear --backtitle "ODROID-STAMPER" \
                 --title "Custom Ubuntu Recipe" \
                 --extra-button --extra-label "Done" \
@@ -164,7 +127,6 @@ do_menu() {
         if [ ${ret} = 3 ]; then
             clear
             default_config ${DEFAULT_CONFIG}
-            OUTFILE=${out_dir}/${IMAGE_FILE}
             break
         elif [ ${ret} = 0 ]; then
             case ${CHOICE} in

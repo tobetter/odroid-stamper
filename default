@@ -78,4 +78,50 @@ ALLOW_ROOT_LOGIN=$(allow_root_login)
 __EOF
 }
 
+distro() {
+    case $1 in
+        bionic | disco | focal | groovy)
+            echo "ubuntu"
+            ;;
+        buster | bullseye)
+            echo "debian"
+            ;;
+        *)
+            echo "unknown"
+            ;;
+    esac
+}
+
+distro_version() {
+    case $1 in
+        bionic)
+            echo "18.04"
+            ;;
+        disco)
+            echo "19.04"
+            ;;
+        focal)
+            echo "20.04"
+            ;;
+        groovy)
+            echo "20.10"
+            ;;
+        buster)
+            echo "buster"
+            ;;
+        bullseye)
+            echo "bullseye"
+            ;;
+    esac
+}
+
+image_file() {
+    if [ "x${OSNAME}" != "x" ]; then
+        IMAGE_FILE_PREFIX="${OSNAME}-${BOARD}"
+    else
+        IMAGE_FILE_PREFIX="$(distro ${1})-$(distro_version ${1})-${2}-${3}"
+    fi
+    echo "${IMAGE_FILE_PREFIX}-`date +%Y%m%d`"
+}
+
 # vim: set ft=sh ts=4 sw=4 expandtab:

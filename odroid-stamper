@@ -2,10 +2,13 @@
 
 #set -x
 
+[ -z "$1" ] || CUSTOMOS=${1}
+
 ODROID_STAMPER_DIR="/usr/share/odroid-stamper"
 
 TOPDIR=${ODROID_STAMPER_CHECKOUT:-${ODROID_STAMPER_DIR}}
 WORKDIR=$PWD
+RUN_MENU=true
 
 DEFAULT_CONFIG=${WORKDIR}/.config
 
@@ -16,13 +19,21 @@ out_dir=${WORKDIR}
 . ${TOPDIR}/default
 . ${TOPDIR}/functions
 
+if [ -f ${TOPDIR}/custom/${CUSTOMOS}/config ]; then
+	cp -f ${TOPDIR}/custom/${CUSTOMOS}/config ${DEFAULT_CONFIG} || exit 1
+	RUN_MENU=false
+fi
+
 if [ ! -f ${DEFAULT_CONFIG} ]; then
     default_config ${DEFAULT_CONFIG}
 fi
 
 . ${DEFAULT_CONFIG}
 
-do_menu
+[ "${RUN_MENU}" = "true" ] && do_menu
+
+[ "x${IMAGE_FILE}" = "x" ] && IMAGE_FILE=$(image_file ${DISTRO} ${FLAVOUR} ${BOARD})
+OUTFILE=${out_dir}/${IMAGE_FILE}
 
 [ -f ${TOPDIR}/configs/${DISTRO}-${FLAVOUR} ] && \
 	. ${TOPDIR}/configs/${DISTRO}-${FLAVOUR}
