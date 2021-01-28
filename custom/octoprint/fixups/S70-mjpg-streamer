@@ -1,0 +1,14 @@
+#!/bin/sh
+
+echo ######################################
+echo # MJPG-STREAMER                      #
+echo ######################################
+
+#snap install mjpg-streamer
+
+#if [ /var/snap/mjpg-streamer/current/config ]; then
+#	sed -i "s/^DAEMON.*/DAEMON=\"true\"/g" /var/snap/mjpg-streamer/current/config
+#fi
+
+# Enable service
+#systemctl enable snap.mjpg-streamer.mjpg-streamer-service

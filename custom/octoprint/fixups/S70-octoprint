@@ -1,0 +1,42 @@
+#!/bin/sh
+
+echo ######################################
+echo # OCTOPRINT                          #
+echo ######################################
+
+OCTOCONFIG_PATH=/home/@@DEFAULT_USER@@/.octoprint
+
+snap install yq
+
+pip install pip --upgrade
+pip install octoprint
+
+usermod -aG tty @@DEFAULT_USER@@
+usermod -aG dialout @@DEFAULT_USER@@
+
+cat>/etc/systemd/system/octoprint.service<<__EOF
+[Unit]
+Description=The snappy web interface for your 3D printer
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Environment="LC_ALL=C.UTF-8"
+Environment="LANG=C.UTF-8"
+Type=simple
+User=@@DEFAULT_USER@@
+ExecStart=/usr/local/bin/octoprint
+
+[Install]
+WantedBy=multi-user.target
+__EOF
+
+# Plugins
+pip install "https://github.com/AliceGrey/OctoprintKlipperPlugin/archive/master.zip"
+
+# Configurations
+cat ${OCTOCONFIG_PATH}/config.yaml \
+	| yq e '.plugins.klipper.configuration.configpath = "/etc/klippy_config/printer.cfg"' - \
+	| ${OCTOCONFIG_PATH}/config.yaml
+
+systemctl enable octoprint
