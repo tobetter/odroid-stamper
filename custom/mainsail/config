@@ -3,7 +3,6 @@ BOARD=odroidc4
 ARCH=arm64
 DISTRO=focal
 FLAVOUR=server
-TARGET_DEVICE=/srv/workspace/odroid-stamper/binary.img
 DEFAULT_USER=odroid
 DEFAULT_PASSWD=odroid
 ALLOW_ROOT_LOGIN=false
