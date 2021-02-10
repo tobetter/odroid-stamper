@@ -3,7 +3,7 @@
 rm -f /etc/apt/sources.list.d/launchpad-hardkernel-ppa.list
 
 apt update && apt upgrade -y
-apt install -y \
+apt install -y --no-install-recommends \
 	odroid-base \
 	@@DEFAULT_FLAVOUR_PACKAGES@@ \
 	@@DEFAULT_KERNEL_PACKAGE@@ \
