@@ -342,17 +342,15 @@ do_finalize_image() {
     if [ -f ${disk} ]; then
         echo "I: finalizing OS image - '${osimage}'"
         mv -f ${disk} ${osimage} || panic "failed to target image file"
-        if [ "x${COMPRESS}" = "xtrue" ]; then
-            echo "I: compressing OS image to ${osimage}"
-            xz ${osimage} || panic "failed to create compressed image file"
-            osimage=${osimage}.xz
-        fi
         md5sum ${osimage} > ${osimage}.md5sum
+        if [ "x${COMPRESS}" = "xtrue" ]; then
+            echo "I: compressing OS image - '${osimage}'"
+            rm -f ${osimage}.xz
+            xz --verbose ${osimage} || panic "failed to create compressed image file"
+            md5sum ${osimage}.xz > ${osimage}.xz.md5sum
+        fi
 
-        xz ${osimage}
-        md5sum ${osimage}.xz > ${osimage}.xz.md5sum
-
-        sed -i -r "s/ .*\/(.+)/  \1/g" ${osimage}.md5sum ${osimage}.xz.md5sum
+        sed -i -r "s/ .*\/(.+)/  \1/g" ${osimage}*.md5sum
     fi
 }
 
