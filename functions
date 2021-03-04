@@ -93,9 +93,6 @@ get_flavour_packages() {
     [ -f custom/${CUSTOMOS}/packages ] &&
         pkgs="${pkgs} $(get_packages custom/${CUSTOMOS}/packages)"
 
-    echo ${pkgs}
-    exit 1
-
     echo ${pkgs} | tr " " "\n" | sort | uniq | tr "\n" " "
 }
 
