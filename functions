@@ -93,6 +93,10 @@ get_flavour_packages() {
     [ -f custom/${CUSTOMOS}/packages ] &&
         pkgs="${pkgs} $(get_packages custom/${CUSTOMOS}/packages)"
 
+    if [ "x${LIVE_BOOT}" = "xtrue" ]; then
+        pkgs="${pkgs} casper"
+    fi
+
     echo ${pkgs} | tr " " "\n" | sort | uniq | tr "\n" " "
 }
 
@@ -120,15 +124,58 @@ get_uuid_by_path() {
     grep " ${1} " ${rootfs_mnt}/etc/fstab | cut -d' ' -f1 | cut -d'=' -f2 | tr -d '"'
 }
 
+do_create_squashfs() {
+    local live_image=filesystem.squashfs
+    local disk=${1}
+    local boot_blk=$((${2} * 1024 * 1024 / 512 - 1))
+    local boot_pstart=$(get_reserved_sectors)
+    [ "x${boot_pstart}" = "x" ] && boot_pstart=2048
+
+    sudo rm -f ${live_image}
+    sudo mksquashfs ${rootfs_mnt} ${live_image} -comp lzo || exit 1
+
+    mkdir -p ${boot_mnt}/casper
+    cp ${live_image} ${boot_mnt}/casper/ && rm -f ${live_image}
+
+    local blocks=$((${boot_pstart} + ${boot_blk} + 81920 * 4))
+    local boot_pend=$((${boot_pstart} + ${boot_blk}))
+
+    echo "I: creating the disk image file '${disk}' ($((${blocks} * 512))KiB)"
+    dd if=/dev/zero bs=512 count=${blocks} \
+        | pv -s $((${blocks} * 512 * 1024))k \
+        | dd of=${disk} >/dev/null
+
+    [ "${BASH_VERSION}" = "" ] || BACKSLASH_ESCAPE="-e"
+
+    echo "I: creating a partition table to '${disk}'"
+    echo ${BACKSLASH_ESCAPE} \
+        "n\np\n\n${boot_pstart}\n${boot_pend}\n" \
+        "w\n" | fdisk ${disk} >/dev/null
+    partprobe
+
+    if [ ! -b ${disk} ]; then
+        losetup -fP ${disk} || panic "failed to setup loopback image"
+        LOOPBACK=$(get_lookback_device ${disk})
+        echo ${LOOPBACK}
+    fi
+
+    UUID_BOOT=$(get_uuid_by_path "/boot")
+
+    sudo mkfs.ext2 -F -L BOOT -U ${UUID_BOOT} \
+        -d ${boot_mnt} $(get_part_boot) 2>/dev/null \
+        || panic "failed to create partition '$(get_part_boot)'"
+}
+
 do_create_partition() {
     local disk=${1}
     local boot_blk=$((${2} * 1024 * 1024 / 512 - 1))
     local root_blk=$(du --block-size=512 ${rootfs_mnt} | tail -1 | awk '{print $1}')
+    local boot_pstart=$(get_reserved_sectors)
 
-    boot_pstart=$(get_reserved_sectors)
     [ "x${boot_pstart}" = "x" ] && boot_pstart=2048
 
     local blocks=$((${boot_pstart} + ${boot_blk} + ${root_blk} + 81920 * 4))
+    local boot_pend=$((${boot_pstart} + ${boot_blk}))
 
     if [ ! -b ${disk} ]; then
         echo "I: creating the disk image file '${disk}' ($((${blocks} * 512))KiB)"
@@ -144,15 +191,13 @@ do_create_partition() {
         dd if=/dev/zero of=${disk} bs=512 count=1 >/dev/null
     fi
 
-    boot_pend=$((${boot_pstart} + ${boot_blk}))
-
     [ "${BASH_VERSION}" = "" ] || BACKSLASH_ESCAPE="-e"
 
     echo "I: creating a partition table to '${disk}'"
     echo ${BACKSLASH_ESCAPE} \
         "n\np\n\n${boot_pstart}\n${boot_pend}\n" \
-        "n\np\n\n$((${boot_pend} + 1))\n\nw\n" \
-        | fdisk ${disk} >/dev/null
+        "n\np\n\n$((${boot_pend} + 1))\n\n" \
+        "w\n" | fdisk ${disk} >/dev/null
     partprobe
 
     if [ ! -b ${disk} ]; then
@@ -210,6 +255,7 @@ do_preinstall() {
             -e "s,@@DEFAULT_USER@@,$(default_user),g" \
             -e "s,@@DEFAULT_USER_PASSWD@@,$(default_user_passwd),g" \
             -e "s,@@DEFAULT_DISTRO@@,${DISTRO},g" \
+            -e "s,@@LIVE_BOOT@@,${LIVE_BOOT},g" \
             ${fixup}
     done
 
@@ -309,7 +355,11 @@ do_create_image() {
     do_postinstall
     do_cleanup
     do_unmount
-    do_create_partition ${baseimage} 256
+    if [ "x${LIVE_BOOT}" = "xtrue" ]; then
+        do_create_squashfs ${baseimage} 512
+    else
+        do_create_partition ${baseimage} 256
+    fi
 }
 
 do_flash_bootloader() {

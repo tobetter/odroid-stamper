@@ -5,3 +5,5 @@
 downloads/
 rootfs/
 out/
+
+*.squashfs
