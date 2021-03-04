@@ -11,6 +11,10 @@ do_unmount() {
         fi
     fi
 
+    if [ -f ${TOPDIR}/custom/${CUSTOMOS}/hooks/umount ]; then
+        . ${TOPDIR}/custom/${CUSTOMOS}/hooks/umount
+    fi
+
     umount -f ${rootfs_mnt}/sys 2>/dev/null
     umount -f ${rootfs_mnt}/proc 2>/dev/null
     umount -f ${rootfs_mnt}/dev/pts 2>/dev/null
@@ -20,6 +24,11 @@ do_unmount() {
 
 cleanup() {
     do_unmount
+
+    if [ -f ${TOPDIR}/custom/${CUSTOMOS}/hooks/umount ]; then
+        . ${TOPDIR}/custom/${CUSTOMOS}/hooks/umount
+    fi
+
     umount -f ${boot_mnt} ${rootfs_mnt} 2>/dev/null
     rm -rf ${boot_mnt} ${rootfs_mnt}
 }
@@ -77,6 +86,14 @@ get_part_root() {
     fi
 }
 
+get_part_ext() {
+    if [ ! -b ${TARGET_DEVICE} ]; then
+        echo "${LOOPBACK}p${1}"
+    else
+        echo "${TARGET_DEVICE}-part${1}"
+    fi
+}
+
 get_kernel_cmdline_defaults() {
     echo ""
 }
@@ -104,6 +121,33 @@ get_lookback_device() {
     echo `losetup -a | grep ${1} | cut -d':' -f1`
 }
 
+oem_mount() {
+    local src=${TOPDIR}/custom/${CUSTOMOS}/part${1}
+    local dst=${rootfs_mnt}/${2}
+
+    mkdir -p ${src}
+    mkdir -p ${dst}
+    mount -o bind ${src} ${dst}
+}
+
+oem_umount() {
+    umount -f ${rootfs_mnt}/${1} 2>/dev/null
+}
+
+oem_mkfs_ext4() {
+    local src=${3}
+    local part=$(get_part_ext ${1})
+    local label=""
+
+    [ "x${2}" = "x" ] || label="-L ${2}"
+    [ "x${src}" = "x" ] && src=${TOPDIR}/custom/oem/part${1}
+
+    if [ -d ${src} ]; then
+        sudo mkfs.ext4 -F ${label} -d ${src} ${part} 2>/dev/null \
+            || panic "failed to create partition '${part}'"
+    fi
+}
+
 do_mount() {
     echo "I: mounting to ${rootfs_mnt}"
 
@@ -118,6 +162,10 @@ do_mount() {
     mount -o bind /dev/pts ${rootfs_mnt}/dev/pts
     mount -o bind /proc ${rootfs_mnt}/proc
     mount -o bind /sys ${rootfs_mnt}/sys
+
+    if [ -f ${TOPDIR}/custom/${CUSTOMOS}/hooks/mount ]; then
+        . ${TOPDIR}/custom/${CUSTOMOS}/hooks/mount
+    fi
 }
 
 get_uuid_by_path() {
@@ -177,6 +225,11 @@ do_create_partition() {
     local blocks=$((${boot_pstart} + ${boot_blk} + ${root_blk} + 81920 * 4))
     local boot_pend=$((${boot_pstart} + ${boot_blk}))
 
+    if [ -f ${TOPDIR}/custom/${CUSTOMOS}/partitions ]; then
+        . ${TOPDIR}/custom/${CUSTOMOS}/partitions
+        blocks=${TOTAL_SECTORS}
+    fi
+
     if [ ! -b ${disk} ]; then
         echo "I: creating the disk image file '${disk}' ($((${blocks} * 512))KiB)"
         dd if=/dev/zero bs=512 count=${blocks} \
@@ -194,6 +247,12 @@ do_create_partition() {
     [ "${BASH_VERSION}" = "" ] || BACKSLASH_ESCAPE="-e"
 
     echo "I: creating a partition table to '${disk}'"
+    if [ -f ${TOPDIR}/custom/${CUSTOMOS}/partitions ]; then
+        echo ${BACKSLASH_ESCAPE} \
+            $(${TOPDIR}/fdiskcmd.sh ${TOPDIR}/custom/${CUSTOMOS}/partitions) \
+            | fdisk ${disk} >/dev/null
+    fi
+
     echo ${BACKSLASH_ESCAPE} \
         "n\np\n\n${boot_pstart}\n${boot_pend}\n" \
         "n\np\n\n$((${boot_pend} + 1))\n\n" \
@@ -204,6 +263,10 @@ do_create_partition() {
         losetup -fP ${disk} || panic "failed to setup loopback image"
         LOOPBACK=$(get_lookback_device ${disk})
         echo ${LOOPBACK}
+    fi
+
+    if [ -f ${TOPDIR}/custom/${CUSTOMOS}/hooks/partition ]; then
+        . ${TOPDIR}/custom/${CUSTOMOS}/hooks/partition
     fi
 
     UUID_BOOT=$(get_uuid_by_path "/boot")
@@ -236,7 +299,8 @@ do_preinstall() {
 
     [ -d ${TOPDIR}/fixups ] && rsync -a ${TOPDIR}/fixups/* ${rootfs_mnt}/${fixups_dir}
     [ -d ${WORKDIR}/fixups ] && rsync -a ${WORKDIR}/fixups/* ${rootfs_mnt}/${fixups_dir}
-    [ -d custom/${CUSTOMOS}/fixups ] && rsync -a custom/${CUSTOMOS}/fixups/* ${rootfs_mnt}/${fixups_dir}
+    [ -d ${TOPDIR}/custom/${CUSTOMOS}/fixups ] \
+        && rsync -a ${TOPDIR}/custom/${CUSTOMOS}/fixups/* ${rootfs_mnt}/${fixups_dir}
 
     FIXUPS=`ls -A1 ${rootfs_mnt}${fixups_dir}/*`
     for fixup in ${FIXUPS}; do
@@ -271,6 +335,8 @@ do_preinstall() {
 
     [ -d ${TOPDIR}/overlay ] && rsync -a ${TOPDIR}/overlay/* ${rootfs_mnt}/
     [ -d ${WORKDIR}/overlay ] && rsync -a ${WORKDIR}/overlay/* ${rootfs_mnt}/
+    [ -d ${TOPDIR}/custom/${CUSTOMOS}/overlay ] \
+        && rsync -a ${TOPDIR}/custom/${CUSTOMOS}/overlay/* ${rootfs_mnt}/
 }
 
 do_postinstall() {

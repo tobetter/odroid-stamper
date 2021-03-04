@@ -1,0 +1,2 @@
+oem_umount var/lib/oem
+oem_umount var/app/oem

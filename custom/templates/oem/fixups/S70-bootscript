@@ -1,0 +1,4 @@
+#!/bin/sh
+
+sed -r -i "s/#\s+(setenv console)/\1/" /usr/share/flash-kernel/ubootenv.d/upstream/10-console
+sed -r -i "s/quiet\s+//g" /etc/default/flash-kernel
