@@ -110,7 +110,7 @@ get_flavour_packages() {
     [ -f custom/${CUSTOMOS}/packages ] &&
         pkgs="${pkgs} $(get_packages custom/${CUSTOMOS}/packages)"
 
-    if [ "x${LIVE_BOOT}" = "xtrue" ]; then
+    if [ "x${LIVEBOOT}" = "xtrue" ]; then
         pkgs="${pkgs} casper"
     fi
 
@@ -319,7 +319,7 @@ do_preinstall() {
             -e "s,@@DEFAULT_USER@@,$(default_user),g" \
             -e "s,@@DEFAULT_USER_PASSWD@@,$(default_user_passwd),g" \
             -e "s,@@DEFAULT_DISTRO@@,${DISTRO},g" \
-            -e "s,@@LIVE_BOOT@@,${LIVE_BOOT},g" \
+            -e "s,@@LIVEBOOT@@,${LIVEBOOT},g" \
             ${fixup}
     done
 
@@ -421,7 +421,7 @@ do_create_image() {
     do_postinstall
     do_cleanup
     do_unmount
-    if [ "x${LIVE_BOOT}" = "xtrue" ]; then
+    if [ "x${LIVEBOOT}" = "xtrue" ]; then
         do_create_squashfs ${baseimage} 512
     else
         do_create_partition ${baseimage} 256
