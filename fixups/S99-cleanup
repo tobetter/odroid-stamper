@@ -1,9 +1,16 @@
 #!/bin/sh
 
-apt autoremove -y
 truncate -s 0 /etc/machine-id
 
+rm /sbin/initctl
+dpkg-divert --rename --remove /sbin/initctl
+
+apt autoremove -y
 apt clean
 
 rm -f /etc/flash-kernel/machine
 rm -f /etc/apt/apt.conf.d/99debconf
+
+rm -rf /tmp/*
+rm -rf ~/.bash_history
+rm -rf /root/default
