@@ -34,4 +34,7 @@ if [ "x${need_tweak}" = "xtrue" ]; then
 	service ssh restart
 fi
 
+apt-get --reinstall install libgdk-pixbuf2.0-0
+update-mime-database /usr/share/mime
+
 exit 0
