@@ -1,0 +1,13 @@
+[Unit]
+Description=ODROID Etcher
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+ExecStart=/usr/bin/xinit \
+	/usr/bin/odroid-etcher-electron
+
+[Install]
+WantedBy=multi-user.target
