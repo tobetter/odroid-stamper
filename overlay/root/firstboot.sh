@@ -17,6 +17,7 @@ lba_finish=$((`fdisk -l ${dev} | grep Disk | grep sectors | awk '{printf $7}'` -
 
 echo -e "p\nd\n2\nn\np\n2\n${lba_start}\n${lba_finish}\np\nw\n" | \
 	fdisk ${dev} >/dev/null
+partprobe
 resize2fs ${rootdev}
 
 rm -f /etc/ssh/ssh_host* && ssh-keygen -A
