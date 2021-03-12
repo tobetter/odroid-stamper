@@ -1,6 +1,6 @@
 #!/bin/sh
 
-INTERNAL_APT=/etc/apt/sources.list.d/ppa_linuxfactory_or_kr.list
+INTERNAL-APT=/etc/apt/sources.list.d/ppa-linuxfactory-or-kr.list
 
 if [ -f ${INTERNAL_APT} ]; then
 	sed -i "/internal/d" ${INTERNAL_APT}
