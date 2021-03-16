@@ -1,0 +1,7 @@
+BOARD=odroidn2plus
+ARCH=arm64
+DISTRO=focal
+FLAVOUR=server
+DEFAULT_USER=odroid
+DEFAULT_PASSWD=odroid
+ALLOW_ROOT_LOGIN=false
