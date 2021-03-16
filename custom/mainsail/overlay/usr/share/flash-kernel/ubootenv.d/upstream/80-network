@@ -1,0 +1,1 @@
+setenv bootargs "${bootargs} net.ifnames=0"
