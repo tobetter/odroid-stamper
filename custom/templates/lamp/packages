@@ -1,0 +1,16 @@
+apache2
+curl
+libapache2-mod-php
+mysql-client
+mysql-server
+php
+php-cli
+php-curl
+php-gd
+php-json
+php-mbstring
+php-mysql
+php-mysql
+php-xml
+php-zip
+ufw
