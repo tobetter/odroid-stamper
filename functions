@@ -175,7 +175,6 @@ get_uuid_by_path() {
 do_create_squashfs() {
     local live_image=filesystem.squashfs
     local disk=${1}
-    local boot_blk=$((${2} * 1024 * 1024 / 512 - 1))
     local boot_pstart=$(get_reserved_sectors)
     [ "x${boot_pstart}" = "x" ] && boot_pstart=2048
 
@@ -185,8 +184,8 @@ do_create_squashfs() {
     mkdir -p ${boot_mnt}/casper
     cp ${live_image} ${boot_mnt}/casper/ && rm -f ${live_image}
 
-    local blocks=$((${boot_pstart} + ${boot_blk} + 81920 * 4))
-    local boot_pend=$((${boot_pstart} + ${boot_blk}))
+    local boot_blk=$(($(du -s --block-size=512 ${boot_mnt} | cut -f1) * 12 / 10 - 1))
+    local blocks=$((${boot_pstart} + ${boot_blk}))
 
     echo "I: creating the disk image file '${disk}' ($((${blocks} * 512))KiB)"
     dd if=/dev/zero bs=512 count=${blocks} \
@@ -197,7 +196,7 @@ do_create_squashfs() {
 
     echo "I: creating a partition table to '${disk}'"
     echo ${BACKSLASH_ESCAPE} \
-        "n\np\n\n${boot_pstart}\n${boot_pend}\n" \
+        "n\np\n\n${boot_pstart}\n\n" \
         "w\n" | fdisk ${disk} >/dev/null
     partprobe
 
@@ -217,13 +216,13 @@ do_create_squashfs() {
 do_create_partition() {
     local disk=${1}
     local boot_blk=$((${2} * 1024 * 1024 / 512 - 1))
-    local root_blk=$(du --block-size=512 ${rootfs_mnt} | tail -1 | awk '{print $1}')
+    local root_blk=$(($(du -s --block-size=512 ${rootfs_mnt} | cut -f1) * 12 / 10))
     local boot_pstart=$(get_reserved_sectors)
 
     [ "x${boot_pstart}" = "x" ] && boot_pstart=2048
 
-    local blocks=$((${boot_pstart} + ${boot_blk} + ${root_blk} + 81920 * 4))
-    local boot_pend=$((${boot_pstart} + ${boot_blk}))
+    local boot_size=$((${boot_pstart} + ${boot_blk}))
+    local blocks=$((${boot_pstart} + ${boot_blk} + ${root_blk}))
 
     if [ -f ${TOPDIR}/custom/${CUSTOMOS}/partitions ]; then
         . ${TOPDIR}/custom/${CUSTOMOS}/partitions
@@ -254,8 +253,8 @@ do_create_partition() {
     fi
 
     echo ${BACKSLASH_ESCAPE} \
-        "n\np\n\n${boot_pstart}\n${boot_pend}\n" \
-        "n\np\n\n$((${boot_pend} + 1))\n\n" \
+        "n\np\n\n${boot_pstart}\n${boot_size}\n" \
+        "n\np\n\n$((${boot_size} + 1))\n\n" \
         "w\n" | fdisk ${disk} >/dev/null
     partprobe
 
@@ -422,7 +421,7 @@ do_create_image() {
     do_cleanup
     do_unmount
     if [ "x${LIVEBOOT}" = "xtrue" ]; then
-        do_create_squashfs ${baseimage} 512
+        do_create_squashfs ${baseimage}
     else
         do_create_partition ${baseimage} 256
     fi
