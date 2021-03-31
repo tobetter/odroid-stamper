@@ -447,7 +447,7 @@ do_flash_bootloader() {
 
 do_finalize_image() {
     local disk=${1}
-    local osimage=${2}
+    local osimage=${2}.img
 
     [ "x${PUBLISH}" = "xtrue" ] && COMPRESS=true
 
@@ -460,6 +460,11 @@ do_finalize_image() {
             rm -f ${osimage}.xz
             xz --verbose ${osimage} || panic "failed to create compressed image file"
             md5sum ${osimage}.xz > ${osimage}.xz.md5sum
+        fi
+
+        if [ "x${ISOIMAGE}" = "xtrue" ]; then
+            mkisofs -J -no-pad -o ${2}.iso ${boot_mnt}
+            md5sum ${2}.iso > ${2}.iso.md5sum
         fi
 
         sed -i -r "s/ .*\/(.+)/  \1/g" ${osimage}*.md5sum
@@ -492,7 +497,7 @@ do_custom_installer() {
                 disk=${LOOPBACK}
             fi
             do_flash_bootloader ${disk}
-            do_finalize_image ${TARGET_DEVICE} ${OUTFILE}.img
+            do_finalize_image ${TARGET_DEVICE} ${OUTFILE}
 
             if [ "x${PUBLISH}" = "xtrue" ]; then
                 do_publish "192.168.0.2" \

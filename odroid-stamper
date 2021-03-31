@@ -31,6 +31,7 @@ fi
 . ${DEFAULT_CONFIG}
 
 [ "${RUN_MENU}" = "true" ] && do_menu
+[ "x${ISOIMAGE}" = "xtrue" ] && LIVESYSTEM=true
 
 [ "x${IMAGE_FILE}" = "x" ] && IMAGE_FILE=$(image_file ${DISTRO} ${FLAVOUR} ${BOARD})
 OUTFILE=${out_dir}/${IMAGE_FILE}
