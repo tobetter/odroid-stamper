@@ -3,7 +3,7 @@
 echo flash-kernel flash-kernel/linux_cmdline string @@LINUX_KERNEL_CMDLINE@@  | \
 	     debconf-set-selections
 
-if [ "x@@LIVEBOOT@@" = "xtrue" ]; then
+if [ "x@@LIVESYSTEM@@" = "xtrue" ]; then
 	cat>/usr/share/flash-kernel/preboot.d/upstream/99-liveboot<<__EOF
 setenv bootargs "\${bootargs} boot=casper toram"
 __EOF
