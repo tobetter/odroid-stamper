@@ -463,7 +463,8 @@ do_finalize_image() {
         fi
 
         if [ "x${ISOIMAGE}" = "xtrue" ]; then
-            mkisofs -J -no-pad -o ${2}.iso ${boot_mnt}
+            mkisofs -R -relaxed-filenames -joliet-long -iso-level 3 -l \
+                -o ${2}.iso ${boot_mnt}
             md5sum ${2}.iso > ${2}.iso.md5sum
         fi
 
