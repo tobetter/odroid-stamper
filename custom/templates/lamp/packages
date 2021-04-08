@@ -1,8 +1,21 @@
+;
+; Fundamental package list to build LAMP server
+;
+; References:
+;   [1] https://phoenixnap.com/kb/how-to-install-lamp-stack-on-ubuntu
+;   [2] https://www.digitalocean.com/community/tutorials/how-to-install-linux-apache-mysql-php-lamp-stack-ubuntu-18-04
+
+# Install Apache installation
 apache2
 curl
 libapache2-mod-php
-mysql-client
-mysql-server
+ufw
+
+# Install MySQL
+mysql-client		# Client
+mysql-server		# Server
+
+# Insall PHP
 php
 php-cli
 php-curl
@@ -13,4 +26,3 @@ php-mysql
 php-mysql
 php-xml
 php-zip
-ufw

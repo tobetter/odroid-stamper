@@ -99,7 +99,7 @@ get_kernel_cmdline_defaults() {
 }
 
 get_packages() {
-    [ -f ${1} ] && cat ${1}
+    [ -f ${1} ] && cat ${1} | awk -F '#|;' '{print $1}'
 }
 
 get_flavour_packages() {
