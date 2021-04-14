@@ -3,10 +3,11 @@
 #set -x
 
 usage() {
-	echo "Usage: $(basename $0) [--help] [--output=<path>]"
+	echo "Usage: $(basename $0) [--help] [--output=<path>] [--live]"
 	echo
 	echo "    --help: this help message"
 	echo "    --output=<path>: output directory for image files."
+	echo "    --live: enforce to build live boot system image."
 	exit 1
 }
 
@@ -31,6 +32,9 @@ for opt in "$@"; do
 		--output=*)
 			out_dir="${opt#*=}"
 			;;
+
+		--no-live)	opt_livesystem=false;;
+		--live)		opt_livesystem=true;;
 	esac
 done
 
@@ -48,6 +52,8 @@ if [ ! -f ${DEFAULT_CONFIG} ]; then
 fi
 
 . ${DEFAULT_CONFIG}
+
+[ "x${opt_livesystem}" = "xtrue" ] && LIVESYSTEM=true
 
 [ "${RUN_MENU}" = "true" ] && do_menu
 [ "x${ISOIMAGE}" = "xtrue" ] && LIVESYSTEM=true
