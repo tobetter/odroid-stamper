@@ -2,6 +2,14 @@
 
 #set -x
 
+usage() {
+	echo "Usage: $(basename $0) [--help] [--output=<path>]"
+	echo
+	echo "    --help: this help message"
+	echo "    --output=<path>: output directory for image files."
+	exit 1
+}
+
 [ -z "$1" ] || CUSTOMOS=${1}
 
 ODROID_STAMPER_DIR="/usr/share/odroid-stamper"
@@ -14,6 +22,17 @@ DEFAULT_CONFIG=${WORKDIR}/.config
 
 download_dir="/var/cache/odroid-stamper/downloads"
 out_dir=${WORKDIR}
+
+for opt in "$@"; do
+	case $opt in
+		--help)
+			usage
+			;;
+		--output=*)
+			out_dir="${opt#*=}"
+			;;
+	esac
+done
 
 . ${TOPDIR}/menu
 . ${TOPDIR}/default
