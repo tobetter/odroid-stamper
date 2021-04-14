@@ -8,6 +8,8 @@ usage() {
 	echo "    --help: this help message"
 	echo "    --output=<path>: output directory for image files."
 	echo "    --live: enforce to build live boot system image."
+	echo "    --keep-builddir: prevent removing temporary directory"
+	echo "                     after building an image."
 	exit 1
 }
 
@@ -22,7 +24,6 @@ RUN_MENU=true
 DEFAULT_CONFIG=${WORKDIR}/.config
 
 download_dir="/var/cache/odroid-stamper/downloads"
-out_dir=${WORKDIR}
 
 for opt in "$@"; do
 	case $opt in
@@ -35,8 +36,13 @@ for opt in "$@"; do
 
 		--no-live)	opt_livesystem=false;;
 		--live)		opt_livesystem=true;;
+		--keep-builddir)
+				opt_keep_builddir=true;;
 	esac
 done
+
+[ "x${out_dir}" = "x" ] && out_dir=${WORKDIR}
+build_dir="${out_dir}/BUILD"
 
 . ${TOPDIR}/menu
 . ${TOPDIR}/default
