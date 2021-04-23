@@ -336,11 +336,6 @@ do_preinstall() {
     if [ ! "x${QEMU_BINARY}" = "x" ]; then
         cp ${QEMU_BINARY} ${rootfs_mnt}/${QEMU_BINARY} || panic "error"
     fi
-
-    [ -d ${TOPDIR}/overlay ] && rsync -a ${TOPDIR}/overlay/* ${rootfs_mnt}/
-    [ -d ${WORKDIR}/overlay ] && rsync -a ${WORKDIR}/overlay/* ${rootfs_mnt}/
-    [ -d ${TOPDIR}/custom/${CUSTOMOS}/overlay ] \
-        && rsync -a ${TOPDIR}/custom/${CUSTOMOS}/overlay/* ${rootfs_mnt}/
 }
 
 do_postinstall() {
@@ -362,6 +357,13 @@ get_install_fixups() {
 }
 
 do_run_fixups() {
+    mkdir -p ${rootfs_mnt}/overlay
+
+    [ -d ${TOPDIR}/overlay ] && rsync -a ${TOPDIR}/overlay/* ${rootfs_mnt}/overlay/
+    [ -d ${WORKDIR}/overlay ] && rsync -a ${WORKDIR}/overlay/* ${rootfs_mnt}/overlay/
+    [ -d ${TOPDIR}/custom/${CUSTOMOS}/overlay ] \
+        && rsync -a ${TOPDIR}/custom/${CUSTOMOS}/overlay/* ${rootfs_mnt}/overlay/
+
     for fixup in $(get_install_fixups); do
         chroot ${rootfs_mnt} ${QEMU_BINARY} \
             /bin/sh ${fixups_dir}/$(basename ${fixup}) || \

@@ -9,4 +9,6 @@ setenv bootargs "\${bootargs} boot=casper toram"
 __EOF
 fi
 
-/usr/sbin/flash-kernel
+rsync -a /overlay/* /
+/usr/sbin/update-initramfs -u
+rm -rf /overlay
