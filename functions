@@ -145,9 +145,34 @@ oem_mkfs_ext4() {
     local label=""
 
     [ "x${2}" = "x" ] || label="-L ${2}"
-    [ "x${src}" = "x" ] && src=${TOPDIR}/custom/oem/part${1}
+
+    # Build image with the file list
+    if [ -f ${TOPDIR}/custom/${CUSTOMOS}/${src} ]; then
+        local overlayfs_dir=${build_dir}/overlayfs
+
+        rm -rf ${overlayfs_dir} && mkdir -p ${overlayfs_dir}
+
+        while read line; do
+            file=$(echo "${line}" | awk -F '#|;' '{print $1}')
+
+            if [ ! -z "${file}" ]; then
+                if ls ${rootfs_mnt}/${file} 1>/dev/null 2>&1; then
+                    dir=$(dirname ${file} | uniq)
+                    mkdir -p ${overlayfs_dir}/${dir}
+                    mv ${rootfs_mnt}/${file} ${overlayfs_dir}/${dir}
+                fi
+            fi
+        done < ${TOPDIR}/custom/${CUSTOMOS}/${src}
+
+        src=${overlayfs_dir}
+    else
+        if [ "x${src}" = "x" ]; then
+            src=${TOPDIR}/custom/${CUSTOMOS}/part${1}
+        fi
+    fi
 
     if [ -d ${src} ]; then
+        echo "* Creating ext4 file system to ${part} with ${src}"
         sudo mkfs.ext4 -F ${label} -d ${src} ${part} 2>/dev/null \
             || panic "failed to create partition '${part}'"
     fi

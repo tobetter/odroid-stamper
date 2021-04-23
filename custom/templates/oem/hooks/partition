@@ -1,3 +1,3 @@
-oem_mkfs_ext4 5 app
-oem_mkfs_ext4 6 lib
-oem_mkfs_ext4 7 etc ${rootfs_mnt}/etc
+oem_mkfs_ext4 5 vendor vendor.list
+oem_mkfs_ext4 6 app
+oem_mkfs_ext4 7 lib
