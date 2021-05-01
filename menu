@@ -70,6 +70,7 @@ do_menu_distro() {
         "disco" "Ubuntu Disco (19.04)" \
         "focal" "Ubuntu Focal (20.04)" \
         "groovy" "Ubuntu Groovy (20.10)" \
+        "hirsute" "Ubuntu Hirsute (21.04)" \
         "buster" "Debian Buster" \
         "bullseye" "Debian Bullseye" \
         2>&1 >/dev/tty)

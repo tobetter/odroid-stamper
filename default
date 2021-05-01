@@ -80,7 +80,7 @@ __EOF
 
 distro() {
     case $1 in
-        bionic | disco | focal | groovy)
+        bionic | disco | focal | groovy | hirsute)
             echo "ubuntu"
             ;;
         buster | bullseye)
@@ -105,6 +105,9 @@ distro_version() {
             ;;
         groovy)
             echo "20.10"
+            ;;
+        hirsute)
+            echo "21.04"
             ;;
         buster)
             echo "buster"
