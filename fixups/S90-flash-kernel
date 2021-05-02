@@ -9,6 +9,5 @@ setenv bootargs "\${bootargs} boot=casper toram"
 __EOF
 fi
 
-rsync -a /overlay/* /
 /usr/sbin/update-initramfs -u
 rm -rf /overlay
