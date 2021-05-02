@@ -310,13 +310,21 @@ do_create_partition() {
 }
 
 do_extract() {
-    local tarball=${1}
-    [ -f ${tarball} ] || panic "missing file ${tarball}"
+    local file=${1}
+    [ -f ${file} ] || panic "missing file ${file}"
 
-    echo "I: extracting ${tarball} to ${rootfs_mnt}..."
-    pv ${tarball} \
-        | tar xzf - --strip-component=1 -C ${rootfs_mnt} \
-            || panic "E: error while extracting"
+    echo "I: extracting ${file} to ${rootfs_mnt}..."
+    case ${file} in
+        *.squashfs)
+            sudo unsquashfs -f -d ${rootfs_mnt} ${file}
+            ;;
+
+        *.tar.gz)
+            pv ${file} \
+                | tar xzf - --strip-component=1 -C ${rootfs_mnt} \
+                    || panic "E: error while extracting"
+            ;;
+    esac
 }
 
 do_preinstall() {
@@ -402,9 +410,15 @@ do_query_latest_tarball() {
     local codename=${3}
     local flavour=${4}
 
-    echo $(lynx -dump -listonly ${host_url}/tarball/${arch}/${codename}/ | \
-        grep tar.gz | grep ${flavour} | sort -r | head -n 1 | \
-        awk '{print $2}')
+    file=$(lynx -dump -listonly ${host_url}/tarball/${arch}/${codename}/ | \
+                grep tar.gz | grep ${flavour} | sort -r | head -n 1 | \
+                awk '{print $2}')
+
+    if [ "x${file}" = "x" ]; then
+            file="https://cloud-images.ubuntu.com/${codename}/current/${codename}-server-cloudimg-${arch}.squashfs"
+    fi
+
+    echo ${file}
 }
 
 do_download_tarball() {
@@ -415,18 +429,22 @@ do_download_tarball() {
     [ "x${url}" = "x" ] && panic "unknown url file"
     [ "x${tarball}" = "x" ] && panic "unknown tarball file"
 
-    if [ -f ${tarball} ]; then
-        wget ${url%.tar.gz}.md5sums.txt --quiet -O .foo.md5sums.txt || \
-            panic "failed to download MD5SUM file '${rul}'"
-        hash_remote=$(cat .foo.md5sums.txt | \
-            grep $(basename ${tarball}) | awk '{print $1}')
-        hash_local=$(md5sum ${tarball} | awk '{print $1}')
-        if [ "${hash_remote}" = "${hash_local}" ]; then
-            download=false
-        else
-            rm -f ${tarball}
-        fi
-    fi
+    case ${tarball} in
+        *.tar.gz)
+            if [ -f ${tarball} ]; then
+                wget ${url%.tar.gz}.md5sums.txt --quiet -O .foo.md5sums.txt || \
+                    panic "failed to download MD5SUM file '${rul}'"
+                hash_remote=$(cat .foo.md5sums.txt | \
+                    grep $(basename ${tarball}) | awk '{print $1}')
+                hash_local=$(md5sum ${tarball} | awk '{print $1}')
+                if [ "${hash_remote}" = "${hash_local}" ]; then
+                    download=false
+                else
+                    rm -f ${tarball}
+                fi
+            fi
+            ;;
+    esac
 
     if [ "${download}" = true ]; then
         wget ${url} -O ${tarball} || \
