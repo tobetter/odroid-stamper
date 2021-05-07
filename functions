@@ -164,6 +164,10 @@ oem_mkfs_ext4() {
             fi
         done < ${TOPDIR}/custom/${CUSTOMOS}/${src}
 
+        # Copy file list to root of partition
+        cp -a ${TOPDIR}/custom/${CUSTOMOS}/${src} \
+            ${overlayfs_dir}/.filesystem
+
         src=${overlayfs_dir}
     else
         if [ "x${src}" = "x" ]; then
