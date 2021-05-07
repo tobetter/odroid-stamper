@@ -1,1 +1,8 @@
-/etc/hostname
+/etc/default/locale
+/etc/environment
+/etc/hosts.allow
+/etc/hosts.deny
+/etc/profile
+/etc/ssh
+/etc/timezone
+/usr/share/netplan

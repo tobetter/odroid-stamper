@@ -1,2 +1,2 @@
-oem_mount 5 var/app/oem
-oem_mount 6 var/lib/oem
+oem_mount 6 var/app/oem
+oem_mount 7 var/lib/oem

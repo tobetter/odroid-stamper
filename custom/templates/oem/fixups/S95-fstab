@@ -1,0 +1,6 @@
+#!/bin/sh
+
+cat <<__EOF | tee -a /etc/fstab >/dev/null
+LABEL=app	/var/app/oem	ext4	ro,relatime 0 0
+LABEL=lib	/var/lib/oem	ext4	ro,relatime 0 0
+__EOF
