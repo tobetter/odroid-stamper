@@ -70,6 +70,9 @@ OUTFILE=${out_dir}/${IMAGE_FILE}
 [ -f ${TOPDIR}/configs/${DISTRO}-${FLAVOUR} ] && \
 	. ${TOPDIR}/configs/${DISTRO}-${FLAVOUR}
 . ${TOPDIR}/boards/${BOARD}/functions
+if [ -f ${TOPDIR}/custom/${CUSTOMOS}/functions ]; then
+	. ${TOPDIR}/custom/${CUSTOMOS}/functions
+fi
 
 trap "trap_ctrlc" 2
 trap "cleanup" 0
