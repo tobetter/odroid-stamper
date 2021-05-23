@@ -3,11 +3,11 @@ get_machine_name() {
 }
 
 get_kernel_package() {
-	echo "linux-image-odroid-upstream"
+	echo "linux-image-generic"
 }
 
 get_bootscript_package() {
-	echo ""
+	echo "bootscript-odroidc4"
 }
 
 get_reserved_sectors() {
@@ -15,5 +15,8 @@ get_reserved_sectors() {
 }
 
 download_uboot() {
-	return false
+    url="https://api.github.com/repos/hardkernel/u-boot/releases"
+    curl -s ${url} | grep browser_download_url | cut -d'"' -f 4 \
+	| grep u-boot-odroidc2 | head -1 \
+	| wget -O ${1} -qi -
 }
