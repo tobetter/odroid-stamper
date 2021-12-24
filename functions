@@ -496,6 +496,10 @@ do_create_image() {
     fi
 }
 
+download_uboot() {
+	echo "U-Boot won't work this build."
+}
+
 do_flash_bootloader() {
     local disk=${1}
     local uboot_tarball=${download_dir}/u-boot.tar.gz
@@ -503,14 +507,16 @@ do_flash_bootloader() {
     echo "I: Downloading U-boot binaries"
     download_uboot ${uboot_tarball} \
             || panic "failed to download bootloader release"
-    rm -rf ${download_dir}/sd_fuse
-    tar xzvf ${uboot_tarball} -C ${download_dir} || false
-    if [ -f ${download_dir}/sd_fuse/sd_fusing.sh ]; then
-        (cd ${download_dir}/sd_fuse;
-            sed -i "/eject/d" ./sd_fusing.sh;
-            chmod +x ./sd_fusing.sh;
-            ./sd_fusing.sh ${disk} 2>/dev/null
-        )
+    if [ -f ${uboot_tarball} ]; then
+        rm -rf ${download_dir}/sd_fuse
+        tar xzvf ${uboot_tarball} -C ${download_dir} || false
+        if [ -f ${download_dir}/sd_fuse/sd_fusing.sh ]; then
+            (cd ${download_dir}/sd_fuse;
+                sed -i "/eject/d" ./sd_fusing.sh;
+                chmod +x ./sd_fusing.sh;
+                ./sd_fusing.sh ${disk} 2>/dev/null
+            )
+        fi
     fi
 }
 
