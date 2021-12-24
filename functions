@@ -379,9 +379,8 @@ do_preinstall() {
             ${fixup}
     done
 
-    if [ "x${INTERNAL}" = "x" ]; then
-        rm -f ${rootfs_mnt}${fixups_dir}/S00-internal-repository
-    fi
+    [ "x${INTERNAL}" = "xtrue" ] \
+        || rm -f ${rootfs_mnt}${fixups_dir}/S00-internal-repository
 
     QEMU_BINARY=$(qemu_binary ${ARCH})
 
