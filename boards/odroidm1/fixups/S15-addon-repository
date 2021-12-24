@@ -1,0 +1,6 @@
+#!/bin/sh
+
+cat>>/etc/apt/sources.list.d/ppa-linuxfactory-or-kr.list<<__EOF
+deb http://ppa.linuxfactory.or.kr @@DEFAULT_DISTRO@@ rk3568
+deb http://ppa.linuxfactory.or.kr @@DEFAULT_DISTRO@@ rockchip
+__EOF

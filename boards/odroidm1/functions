@@ -1,0 +1,15 @@
+get_machine_name() {
+	echo "Hardkernel ODROID-M1"
+}
+
+get_kernel_package() {
+	echo "linux-image-odroidm1"
+}
+
+get_bootscript_package() {
+	echo "bootscript-odroidm1"
+}
+
+get_reserved_sectors() {
+	echo 2048
+}
