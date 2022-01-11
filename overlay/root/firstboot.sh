@@ -8,7 +8,8 @@ PATH=/sbin:/usr/sbin:/bin:/usr/bin
 rootdev=`blkid -U @@UUID_ROOTFS@@`
 
 case ${rootdev} in
-	/dev/mmcblk*) dev=${rootdev%??} ;;
+	/dev/mmcblk* | /dev/nvme*)
+		dev=${rootdev%??} ;;
 	*) dev=${rootdev%?} ;;
 esac
 
