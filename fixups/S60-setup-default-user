@@ -9,3 +9,6 @@ adduser --gecos @@DEFAULT_USER@@ --disabled-login @@DEFAULT_USER@@
 
 echo "I: set default user password"
 echo "@@DEFAULT_USER@@:@@DEFAULT_USER_PASSWD@@" | chpasswd
+
+echo "I: set default groups for a defaule user"
+adduser @@DEFAULT_USER@@ audio
