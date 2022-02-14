@@ -11,7 +11,14 @@ Rules-Requires-Root: no
 
 Package: odroid-stamper
 Architecture: any
-Depends: lynx, dialog, pv, squashfs-tools
+Depends: qemu-user-static,
+  dialog,
+  lynx,
+  pv,
+  rsync,
+  squashfs-tools,
+  uuid-runtime,
+  wget
 Description: Utility to create or install a OS to a storage
  The odroid-stamper is a script that will help to create an OS image with
  update packages or install to a memory card on ODROID single board computer
