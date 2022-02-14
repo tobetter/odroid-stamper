@@ -4,9 +4,12 @@ echo flash-kernel flash-kernel/linux_cmdline string @@LINUX_KERNEL_CMDLINE@@  | 
 	     debconf-set-selections
 
 if [ "x@@LIVESYSTEM@@" = "xtrue" ]; then
-	cat>/usr/share/flash-kernel/preboot.d/upstream/99-liveboot<<__EOF
-setenv bootargs "\${bootargs} boot=casper toram"
-__EOF
+	if [ -f /etc/default/flash-kernel ]; then
+		. /etc/default/flash-kernel
+
+		sed -i "s/^LINUX_KERNEL_CMDLINE=.*/LINUX_KERNEL_CMDLINE=\"$LINUX_KERNEL_CMDLINE boot=casper toram\"/g" \
+			/etc/default/flash-kernel
+	fi
 fi
 
 /usr/sbin/update-initramfs -u
