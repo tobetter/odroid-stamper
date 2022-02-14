@@ -83,7 +83,7 @@ distro() {
         bionic | disco | focal | groovy | hirsute)
             echo "ubuntu"
             ;;
-        buster | bullseye)
+        buster | bullseye | bookworm)
             echo "debian"
             ;;
         *)
@@ -114,6 +114,9 @@ distro_version() {
             ;;
         bullseye)
             echo "bullseye"
+            ;;
+        bookworm)
+            echo "bookworm"
             ;;
     esac
 }

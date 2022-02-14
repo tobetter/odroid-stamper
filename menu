@@ -73,6 +73,7 @@ do_menu_distro() {
         "hirsute" "Ubuntu Hirsute (21.04)" \
         "buster" "Debian Buster" \
         "bullseye" "Debian Bullseye" \
+        "bookworm" "Debian Bookworm" \
         2>&1 >/dev/tty)
 
     ret=$?
