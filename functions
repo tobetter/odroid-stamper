@@ -438,6 +438,12 @@ do_query_latest_tarball() {
     local codename=${3}
     local flavour=${4}
 
+    case ${flavour} in
+        *-desktop*)
+            flavour="server"
+            ;;
+    esac
+
     file=$(lynx -dump -listonly ${host_url}/tarball/${arch}/${codename}/ | \
                 grep tar.gz | grep ${flavour} | sort -r | head -n 1 | \
                 awk '{print $2}')
