@@ -14,3 +14,7 @@ rm -f /etc/apt/apt.conf.d/99debconf
 rm -rf /tmp/*
 rm -rf ~/.bash_history
 rm -rf /root/default
+
+chown -R root:root /boot
+chown -R root:root /etc
+chown -R root:root /root
