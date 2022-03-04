@@ -365,6 +365,19 @@ do_preinstall() {
     [ -d ${TOPDIR}/boards/${BOARD}/fixups ] \
         && rsync -a ${TOPDIR}/boards/${BOARD}/fixups/* ${rootfs_mnt}/${fixups_dir}
 
+    case ${FLAVOUR} in
+        *-desktop*)
+            faceimage=${TOPDIR}/face.png
+            if [ -f ${TOPDIR}/boards/${BOARD}/face.png ]; then
+                faceimage=${TOPDIR}/boards/${BOARD}/face.png
+            elif [ -f ${TOPDIR}/custom/${CUSTOMOS}/face.png ]; then
+                faceimage=${TOPDIR}/custom/${CUSTOMOS}/face.png
+            fi
+
+            cp -a ${faceimage} ${rootfs_mnt}/tmp
+            ;;
+    esac
+
     FIXUPS=`ls -A1 ${rootfs_mnt}${fixups_dir}/*`
     for fixup in ${FIXUPS}; do
         sed -i \
@@ -402,6 +415,7 @@ do_postinstall() {
     if [ ! "x${QEMU_BINARY}" = "x" ]; then
         rm -f ${rootfs_mnt}/${QEMU_BINARY}
     fi
+    rm -f ${rootfs_mnt}/tmp/face.png
     rm -rf ${rootfs_mnt}${fixups_dir}
     rm -rf ${rootfs_mnt}/etc/apt/sources.list.d/ppa_linuxfactory_or_kr.list
 }

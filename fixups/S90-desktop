@@ -1,0 +1,22 @@
+#!/bin/sh
+
+[ -f /etc/default/desktop ] || exit 0
+
+. /etc/default/desktop
+
+case ${SESSION} in
+	ubuntu-wayland)
+		if [ -f /tmp/face.png ]; then
+			echo "I: copy default display picture for GDM"
+			cp -a /tmp/face.png /home/@@DEFAULT_USER@@/.face
+		fi
+		cat>/var/lib/AccountsService/users/@@DEFAULT_USER@@<<__EOF
+[User]
+Session=${SESSION}
+XSession=${SESSION}
+Icon=/home/@@DEFAULT_USER@@/.face
+SystemAccount=false
+__EOF
+		chown root:root /var/lib/AccountsService/users/@@DEFAULT_USER@@
+		;;
+esac
