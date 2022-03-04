@@ -116,6 +116,7 @@ get_flavour_packages() {
 
     pkgs="${pkgs} $(get_packages configs/${DISTRO}-${FLAVOUR}.packages)"
     pkgs="${pkgs} $(get_packages boards/${BOARD}/packages)"
+    pkgs="${pkgs} $(get_packages boards/${BOARD}/${DISTRO}-${FLAVOUR}.packages)"
     [ -f custom/${CUSTOMOS}/packages ] &&
         pkgs="${pkgs} $(get_packages custom/${CUSTOMOS}/packages)"
 
@@ -419,6 +420,8 @@ do_run_fixups() {
 
     [ -d ${TOPDIR}/overlay ] && rsync -a ${TOPDIR}/overlay/* ${rootfs_mnt}/overlay/
     [ -d ${WORKDIR}/overlay ] && rsync -a ${WORKDIR}/overlay/* ${rootfs_mnt}/overlay/
+    [ -d ${TOPDIR}/flavour/${DISTRO}/${FLAVOUR}/overlay ] \
+        && rsync -a ${TOPDIR}/flavour/${DISTRO}/${FLAVOUR}/overlay/* ${rootfs_mnt}/overlay
     [ -d ${TOPDIR}/custom/${CUSTOMOS}/overlay ] \
         && rsync -a ${TOPDIR}/custom/${CUSTOMOS}/overlay/* ${rootfs_mnt}/overlay/
 
