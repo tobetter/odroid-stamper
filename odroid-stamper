@@ -39,6 +39,7 @@ for opt in "$@"; do
 		--no-live)	opt_livesystem=false;;
 		--live)		opt_livesystem=true;;
 		--compress)	opt_compress=true;;
+		--internal)	opt_internal=true;;
 		--keep-builddir)
 				opt_keep_builddir=true;;
 	esac
@@ -64,6 +65,7 @@ fi
 
 [ "x${opt_livesystem}" = "xtrue" ] && LIVESYSTEM=true
 [ "x${opt_compress}" = "xtrue" ] && COMPRESS=true
+[ "x${opt_internal}" = "xtrue" ] && INTERNAL=true
 
 [ "${RUN_MENU}" = "true" ] && do_menu
 [ "x${ISOIMAGE}" = "xtrue" ] && LIVESYSTEM=true

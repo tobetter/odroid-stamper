@@ -1,5 +1,7 @@
 #!/bin/sh
 
-cat>/etc/apt/sources.list.d/ppa-linuxfactory-or-kr.list<<__EOF
+touch /etc/apt/sources.list.d/ppa-linuxfactory-or-kr.list
+
+cat>>/etc/apt/sources.list.d/ppa-linuxfactory-or-kr.list<<__EOF
 deb http://ppa.linuxfactory.or.kr @@DEFAULT_DISTRO@@ internal
 __EOF
