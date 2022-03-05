@@ -91,6 +91,7 @@ do_menu_flavour() {
             "lxde-desktop" "LXDE" \
             "mate-desktop" "MATE" \
             "xfce-desktop" "XFCE" \
+            "weston" "Weston" \
             2>&1 >/dev/tty)
 
     ret=$?

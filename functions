@@ -455,7 +455,7 @@ do_query_latest_tarball() {
     local flavour=${4}
 
     case ${flavour} in
-        *-desktop*)
+        *-desktop* | weston)
             flavour="server"
             ;;
     esac
