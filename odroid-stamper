@@ -8,6 +8,7 @@ usage() {
 	echo "    --help: this help message"
 	echo "    --output=<path>: output directory for image files."
 	echo "    --live: enforce to build live boot system image."
+	echo "    --compress: compress the final OS image using 'xz'."
 	echo "    --keep-builddir: prevent removing temporary directory"
 	echo "                     after building an image."
 	exit 1
@@ -37,6 +38,7 @@ for opt in "$@"; do
 
 		--no-live)	opt_livesystem=false;;
 		--live)		opt_livesystem=true;;
+		--compress)	opt_compress=true;;
 		--keep-builddir)
 				opt_keep_builddir=true;;
 	esac
@@ -61,6 +63,7 @@ fi
 . ${DEFAULT_CONFIG}
 
 [ "x${opt_livesystem}" = "xtrue" ] && LIVESYSTEM=true
+[ "x${opt_compress}" = "xtrue" ] && COMPRESS=true
 
 [ "${RUN_MENU}" = "true" ] && do_menu
 [ "x${ISOIMAGE}" = "xtrue" ] && LIVESYSTEM=true
