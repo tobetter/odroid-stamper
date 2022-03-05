@@ -73,8 +73,8 @@ fi
 [ "x${IMAGE_FILE}" = "x" ] && IMAGE_FILE=$(image_file ${DISTRO} ${FLAVOUR} ${BOARD})
 OUTFILE=${out_dir}/${IMAGE_FILE}
 
-[ -f ${TOPDIR}/configs/${DISTRO}-${FLAVOUR} ] && \
-	. ${TOPDIR}/configs/${DISTRO}-${FLAVOUR}
+[ -f ${TOPDIR}/distro/${DISTRO}/${FLAVOUR}/functions ] && \
+	. ${TOPDIR}/distro/${DISTRO}/${FLAVOUR}/functions
 . ${TOPDIR}/boards/${BOARD}/functions
 if [ -f ${TOPDIR}/custom/${CUSTOMOS}/functions ]; then
 	. ${TOPDIR}/custom/${CUSTOMOS}/functions

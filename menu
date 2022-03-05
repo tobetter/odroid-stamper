@@ -1,7 +1,7 @@
 do_finish() {
     echo ${BOARD}
     echo ${DISTRO}-${FLAVOUR}
-    if [ ! -f configs/${DISTRO}-${FLAVOUR} ]; then
+    if [ ! -f distro/${DISTRO}/${FLAVOUR} ]; then
         echo XXX
     fi
     exit 0
@@ -87,9 +87,10 @@ do_menu_flavour() {
             --menu "X" 15 70 10 \
             "server" "Server" \
             "gnome-desktop" "GNOME" \
+            "kde-desktop" "KDE Plasma" \
             "lxde-desktop" "LXDE" \
             "mate-desktop" "MATE" \
-            "xfce4-desktop" "XFCE" \
+            "xfce-desktop" "XFCE" \
             2>&1 >/dev/tty)
 
     ret=$?

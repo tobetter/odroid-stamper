@@ -1,7 +1,5 @@
+ubuntu-mate-desktop^
 openssh-server
 neofetch
-fdisk
-parted
-vim
 net-tools
 netplan.io

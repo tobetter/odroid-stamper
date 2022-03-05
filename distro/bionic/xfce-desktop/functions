@@ -1,0 +1,3 @@
+allow_root_login() {
+    echo true
+}
