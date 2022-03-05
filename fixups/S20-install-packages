@@ -6,6 +6,9 @@ locale-gen en_US.UTF-8
 
 rm -f /etc/apt/sources.list.d/launchpad-hardkernel-ppa.list
 
+apt-key adv --keyserver keyserver.ubuntu.com \
+	--recv-keys 4F71126C02B8F823
+
 apt update && apt upgrade -y
 apt install @@DEFAULT_APT_OPTIONS@@ \
 	odroid-base \
