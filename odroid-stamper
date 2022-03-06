@@ -73,6 +73,12 @@ fi
 [ "x${IMAGE_FILE}" = "x" ] && IMAGE_FILE=$(image_file ${DISTRO} ${FLAVOUR} ${BOARD})
 OUTFILE=${out_dir}/${IMAGE_FILE}
 
+if [ ! -d ${TOPDIR}/distro/${DISTRO}/${FLAVOUR} ]; then
+	echo "No build target for ${DISTRO}/${FLAVOUR}"
+	usage
+	exit 0
+fi
+
 [ -f ${TOPDIR}/distro/${DISTRO}/${FLAVOUR}/functions ] && \
 	. ${TOPDIR}/distro/${DISTRO}/${FLAVOUR}/functions
 . ${TOPDIR}/boards/${BOARD}/functions
