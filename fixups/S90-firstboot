@@ -25,3 +25,4 @@ WantedBy=multi-user.target
 __EOF
 
 systemctl enable firstboot.service
+systemctl disable ondemand
