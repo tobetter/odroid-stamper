@@ -1,6 +1,15 @@
-#!/bin/sh
+#!/bin/bash
 
 #set -x
+
+ODROID_STAMPER_DIR="/usr/share/odroid-stamper"
+
+TOPDIR=${ODROID_STAMPER_CHECKOUT:-${ODROID_STAMPER_DIR}}
+WORKDIR=$PWD
+RUN_MENU=true
+INTERNAL=${INTERNAL:-false}
+
+DEFAULT_CONFIG=${WORKDIR}/.config
 
 usage() {
 	echo "Usage: $(basename $0) [--help] [--output=<path>] [--live]"
@@ -16,17 +25,6 @@ usage() {
 
 [ -z "$1" ] || CUSTOMOS=${1}
 
-ODROID_STAMPER_DIR="/usr/share/odroid-stamper"
-
-TOPDIR=${ODROID_STAMPER_CHECKOUT:-${ODROID_STAMPER_DIR}}
-WORKDIR=$PWD
-RUN_MENU=true
-INTERNAL=${INTERNAL:-false}
-
-DEFAULT_CONFIG=${WORKDIR}/.config
-
-download_dir="/var/cache/odroid-stamper/downloads"
-
 for opt in "$@"; do
 	case $opt in
 		--help)
@@ -36,6 +34,11 @@ for opt in "$@"; do
 			out_dir="${opt#*=}"
 			;;
 
+		--board=*)	opt_board="${opt#*=}";;
+		--distro=*)	opt_distro="${opt#*=}";;
+		--flavour=*)	opt_flavour="${opt#*=}";;
+		--username=*)	opt_username="${opt#*=}";;
+		--password=*)	opt_password="${opt#*=}";;
 		--no-live)	opt_livesystem=false;;
 		--live)		opt_livesystem=true;;
 		--compress)	opt_compress=true;;
@@ -47,6 +50,7 @@ done
 
 [ "x${out_dir}" = "x" ] && out_dir=${WORKDIR}
 build_dir="${out_dir}/BUILD"
+download_dir="/var/cache/odroid-stamper/downloads"
 
 . ${TOPDIR}/menu
 . ${TOPDIR}/default
@@ -58,10 +62,27 @@ if [ -f ${TOPDIR}/custom/${CUSTOMOS}/config ]; then
 fi
 
 if [ ! -f ${DEFAULT_CONFIG} ]; then
-    default_config ${DEFAULT_CONFIG}
+	default_config ${DEFAULT_CONFIG}
 fi
 
 . ${DEFAULT_CONFIG}
+
+if [ ! -z ${opt_board} ]; then
+	BOARD=${opt_board}
+	ARCH=$(get_arch ${BOARD})
+fi
+[ -z ${opt_distro} ] || DISTRO=${opt_distro}
+[ -z ${opt_flavour} ] || FLAVOUR=${opt_flavour}
+[ -z ${opt_username} ] || DEFAULT_USER=${opt_username}
+[ -z ${opt_password} ] || DEFAULT_PASSWD=${opt_password}
+
+# Not to run menu when mandatory options are all given in command.
+if [[ ! -z ${opt_board} ]] && [[ ! -z ${opt_distro} ]] && [[ ! -z ${opt_flavour} ]] \
+	&& [[ ! -z ${opt_username} ]] && [[ ! -z ${opt_password} ]]; then
+	TARGET_DEVICE=$PWD/binary.img
+	ALLOW_ROOT_LOGIN=false
+	RUN_MENU="false"
+fi
 
 [ "x${opt_livesystem}" = "xtrue" ] && LIVESYSTEM=true
 [ "x${opt_compress}" = "xtrue" ] && COMPRESS=true
