@@ -382,7 +382,7 @@ do_preinstall() {
     for fixup in ${FIXUPS}; do
         sed -i \
             -e "s,@@DEFAULT_BOARD@@,${BOARD},g" \
-            -e "s,@@DEFAULT_HOSTNAME@@,${DISTRO}-${FLAVOUR},g" \
+            -e "s,@@DEFAULT_HOSTNAME@@,${FLAVOUR},g" \
             -e "s,@@DEFAULT_APT_OPTIONS@@,$(get_default_apt_options ${FLAVOUR}),g" \
             -e "s,@@DEFAULT_FLAVOUR_PACKAGES@@,$(get_flavour_packages),g" \
             -e "s,@@DEFAULT_KERNEL_PACKAGE@@,$(get_kernel_package),g" \
