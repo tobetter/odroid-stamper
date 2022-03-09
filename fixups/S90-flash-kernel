@@ -1,5 +1,18 @@
 #!/bin/sh
 
+PLYMOUTH_CMDLINE="plymouth.ignore-serial-consoles"
+
+if dpkg -s plymouth >/dev/null; then
+	echo "FRAMEBUFFER=y" > /etc/initramfs-tools/conf.d/splash
+
+	if [ -f /etc/default/flash-kernel ]; then
+		. /etc/default/flash-kernel
+
+		sed -i "s/^LINUX_KERNEL_CMDLINE=.*/LINUX_KERNEL_CMDLINE=\"$LINUX_KERNEL_CMDLINE $PLYMOUTH_CMDLINE\"/g" \
+			/etc/default/flash-kernel
+	fi
+fi
+
 echo flash-kernel flash-kernel/linux_cmdline string @@LINUX_KERNEL_CMDLINE@@  | \
 	     debconf-set-selections
 
