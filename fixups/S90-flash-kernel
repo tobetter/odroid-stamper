@@ -2,6 +2,13 @@
 
 PLYMOUTH_CMDLINE="plymouth.ignore-serial-consoles"
 
+if [ -f /etc/default/flash-kernel ]; then
+	. /etc/default/flash-kernel
+
+	sed -i "s/^LINUX_KERNEL_CMDLINE=.*/LINUX_KERNEL_CMDLINE=\"root=UUID=@@DEFAULT_DEV_ROOTFS@@ $LINUX_KERNEL_CMDLINE\"/g" \
+		/etc/default/flash-kernel
+fi
+
 if dpkg -s plymouth >/dev/null; then
 	echo "FRAMEBUFFER=y" > /etc/initramfs-tools/conf.d/splash
 
