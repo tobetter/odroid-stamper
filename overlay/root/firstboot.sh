@@ -23,17 +23,6 @@ resize2fs ${rootdev}
 
 rm -f /etc/ssh/ssh_host* && ssh-keygen -A
 
-case $(cat /sys/firmware/devicetree/base/model) in
-        "Hardkernel Odroid XU4")
-                need_tweak="true"
-                ;;
-        *)
-                need_tweak="false"
-                ;;
-esac
-
-if [ "x${need_tweak}" = "xtrue" ]; then
-	service ssh restart
-fi
+service ssh restart
 
 exit 0
