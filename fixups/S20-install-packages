@@ -9,7 +9,7 @@ apt-key adv --keyserver keyserver.ubuntu.com \
 
 apt update && apt upgrade -y
 apt install @@DEFAULT_APT_OPTIONS@@ \
-	odroid-base odroid-alsa \
+	odroid-base \
 	rsync \
 	@@DEFAULT_FLAVOUR_PACKAGES@@ \
 	@@DEFAULT_KERNEL_PACKAGE@@ \
