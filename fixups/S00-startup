@@ -16,8 +16,9 @@ Dpkg::Options {
 };
 __EOF
 
-dbus-uuidgen > /etc/machine-id
-ln -fs /etc/machin-id /var/lib/dbus/machine-id
+systemd-machine-id-setup
+mkdir -p /var/lib/dbus
+ln -fs /etc/machine-id /var/lib/dbus/machine-id
 
 dpkg-divert --local --rename --add /sbin/initctl
 ln -s /bin/true /sbin/initctl

@@ -399,6 +399,7 @@ do_preinstall() {
             -e "s,@@DEFAULT_USER_PASSWD@@,$(default_user_passwd),g" \
             -e "s,@@DEFAULT_DISTRO@@,${DISTRO},g" \
             -e "s,@@LIVESYSTEM@@,${LIVESYSTEM},g" \
+            -e "s,@@MACHINEID@@,$(dbus-uuidgen),g" \
             ${fixup}
     done
 
