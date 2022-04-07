@@ -92,6 +92,11 @@ fi
 [ "x${ISOIMAGE}" = "xtrue" ] && LIVESYSTEM=true
 
 [ "x${IMAGE_FILE}" = "x" ] && IMAGE_FILE=$(image_file ${DISTRO} ${FLAVOUR} ${BOARD})
+
+if [ "x${LIVESYSTEM}" = "xtrue" ]; then
+	IMAGE_FILE=${IMAGE_FILE}-live
+fi
+
 OUTFILE=${out_dir}/${IMAGE_FILE}
 
 if [ ! -d ${TOPDIR}/distro/${DISTRO}/${FLAVOUR} ]; then
