@@ -16,6 +16,7 @@ usage() {
 	echo
 	echo "    --help: this help message"
 	echo "    --output=<path>: output directory for image files."
+	echo "    --iso: build target OS image as ISO format."
 	echo "    --live: enforce to build live boot system image."
 	echo "    --compress: compress the final OS image using 'xz'."
 	echo "    --keep-builddir: prevent removing temporary directory"
@@ -41,6 +42,7 @@ for opt in "$@"; do
 		--password=*)	opt_password="${opt#*=}";;
 		--no-live)	opt_livesystem=false;;
 		--live)		opt_livesystem=true;;
+		--iso)		opt_isoimage=true;;
 		--compress)	opt_compress=true;;
 		--internal)	opt_internal=true;;
 		--keep-builddir)
@@ -85,6 +87,7 @@ if [[ ! -z ${opt_board} ]] && [[ ! -z ${opt_distro} ]] && [[ ! -z ${opt_flavour}
 fi
 
 [ "x${opt_livesystem}" = "xtrue" ] && LIVESYSTEM=true
+[ "x${opt_isoimage}" = "xtrue" ] && ISOIMAGE=true
 [ "x${opt_compress}" = "xtrue" ] && COMPRESS=true
 [ "x${opt_internal}" = "xtrue" ] && INTERNAL=true
 
