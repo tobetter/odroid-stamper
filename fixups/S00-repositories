@@ -1,0 +1,13 @@
+#!/bin/sh
+
+if [ ! -f /etc/apt/sources.list.d/ppa-linuxfactory-or-kr.list ]; then
+	cat>/etc/apt/sources.list.d/ppa-linuxfactory-or-kr.list<<__EOF
+deb [trusted=yes] http://ppa.linuxfactory.or.kr @@DEFAULT_DISTRO@@ main
+__EOF
+fi
+
+if [ "x@@INTERNAL@@" = "xtrue" ]; then
+	cat>>/etc/apt/sources.list.d/ppa-linuxfactory-or-kr.list<<__EOF
+deb [trusted=yes] http://ppa.linuxfactory.or.kr @@DEFAULT_DISTRO@@ internal
+__EOF
+fi

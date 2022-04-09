@@ -400,11 +400,9 @@ do_preinstall() {
             -e "s,@@DEFAULT_DISTRO@@,${DISTRO},g" \
             -e "s,@@LIVESYSTEM@@,${LIVESYSTEM},g" \
             -e "s,@@MACHINEID@@,$(dbus-uuidgen),g" \
+            -e "s,@@INTERNAL@@,${INTERNAL},g" \
             ${fixup}
     done
-
-    [ "x${INTERNAL}" = "xtrue" ] \
-        || rm -f ${rootfs_mnt}${fixups_dir}/S00-internal-repository
 
     QEMU_BINARY=$(qemu_binary ${ARCH})
 
