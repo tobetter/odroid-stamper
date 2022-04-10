@@ -94,7 +94,14 @@ fi
 [ "${RUN_MENU}" = "true" ] && do_menu
 [ "x${ISOIMAGE}" = "xtrue" ] && LIVESYSTEM=true
 
-[ "x${IMAGE_FILE}" = "x" ] && IMAGE_FILE=$(image_file ${DISTRO} ${FLAVOUR} ${BOARD})
+if [ "x${IMAGE_FILE}" = "x" ]; then
+	if [ "x${CUSTOMOS}" = "x" ]; then
+		MIDNAME=${FLAVOUR}
+	else
+		MIDNAME=${CUSTOMOS}
+	fi
+	IMAGE_FILE=$(image_file ${DISTRO} ${MIDNAME} ${BOARD})
+fi
 
 if [ "x${LIVESYSTEM}" = "xtrue" ]; then
 	IMAGE_FILE=${IMAGE_FILE}-live
