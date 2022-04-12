@@ -13,3 +13,4 @@ fi
 
 echo "I: set default groups for a defaule user"
 adduser @@DEFAULT_USER@@ audio
+adduser @@DEFAULT_USER@@ video
