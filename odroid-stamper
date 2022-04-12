@@ -24,8 +24,6 @@ usage() {
 	exit 1
 }
 
-[ -z "$1" ] || CUSTOMOS=${1}
-
 for opt in "$@"; do
 	case $opt in
 		--help)
@@ -47,6 +45,8 @@ for opt in "$@"; do
 		--internal)	opt_internal=true;;
 		--keep-builddir)
 				opt_keep_builddir=true;;
+		--custom=*)
+				opt_custom="${opt#*=}";;
 	esac
 done
 
@@ -57,6 +57,8 @@ download_dir="/var/cache/odroid-stamper/downloads"
 . ${TOPDIR}/menu
 . ${TOPDIR}/default
 . ${TOPDIR}/functions
+
+[ -z ${opt_custom} ] || CUSTOMOS=${opt_custom}
 
 if [ -f ${TOPDIR}/custom/${CUSTOMOS}/config ]; then
 	cp -f ${TOPDIR}/custom/${CUSTOMOS}/config ${DEFAULT_CONFIG} || exit 1
