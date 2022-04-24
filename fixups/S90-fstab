@@ -14,3 +14,5 @@ if [ "x@@DEFAULT_DEV_BOOT@@" != "x" ]; then
 UUID="@@DEFAULT_DEV_BOOT@@" /boot ext2 rw,relatime,errors=continue 0 0
 __EOF
 fi
+
+update-initramfs -u
