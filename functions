@@ -512,6 +512,11 @@ do_download_tarball() {
                 fi
             fi
             ;;
+        *)
+            if [ -f ${tarball} ]; then
+                download=false
+            fi
+			;;
     esac
 
     if [ "${download}" = true ]; then
