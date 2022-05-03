@@ -127,6 +127,18 @@ get_flavour_packages() {
     echo ${pkgs} | tr " " "\n" | sort | uniq | tr "\n" " "
 }
 
+get_blacklist_packages() {
+    local pkgs=""
+
+    pkgs="${pkgs} $(get_packages distro/${DISTRO}/${FLAVOUR}/blacklist)"
+    pkgs="${pkgs} $(get_packages boards/${BOARD}/blacklist)"
+    pkgs="${pkgs} $(get_packages boards/${BOARD}/distro/${DISTRO}/${FLAVOUR}/blacklist)"
+    [ -f custom/${CUSTOMOS}/blacklist ] &&
+        pkgs="${pkgs} $(get_packages custom/${CUSTOMOS}/blacklist)"
+
+    echo ${pkgs} | tr " " "\n" | sort | uniq | tr "\n" " "
+}
+
 get_lookback_device() {
     echo `losetup -a | grep ${1} | cut -d':' -f1`
 }
@@ -387,6 +399,7 @@ do_preinstall() {
             -e "s,@@DEFAULT_HOSTNAME@@,${FLAVOUR},g" \
             -e "s,@@DEFAULT_APT_OPTIONS@@,$(get_default_apt_options ${FLAVOUR}),g" \
             -e "s,@@DEFAULT_FLAVOUR_PACKAGES@@,$(get_flavour_packages),g" \
+            -e "s,@@DEFAULT_BLACKLIST_PACKAGES@@,$(get_blacklist_packages),g" \
             -e "s,@@DEFAULT_KERNEL_PACKAGE@@,$(get_kernel_package),g" \
             -e "s,@@DEFAULT_BOOTSCRIPT_PACKAGE@@,$(get_bootscript_package),g" \
             -e "s,@@DEFAULT_MACHINE_NAME@@,$(get_machine_name),g" \
