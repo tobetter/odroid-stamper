@@ -24,6 +24,8 @@ resize2fs ${rootdev}
 rm -f /etc/ssh/ssh_host* && ssh-keygen -A
 
 sed -i "s/PasswordAuthentication.*/PasswordAuthentication yes/g" /etc/ssh/sshd_config
-service ssh restart
+
+systemctl enable ssh
+systemctl restart ssh
 
 exit 0

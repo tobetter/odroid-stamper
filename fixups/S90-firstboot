@@ -26,3 +26,5 @@ __EOF
 
 systemctl enable firstboot.service
 systemctl disable ondemand
+
+systemctl disable ssh
