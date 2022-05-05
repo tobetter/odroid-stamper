@@ -173,10 +173,16 @@ oem_mkfs_ext4() {
             file=$(echo "${line}" | awk -F '#|;' '{print $1}')
 
             if [ ! -z "${file}" ]; then
-                if ls ${rootfs_mnt}/${file} 1>/dev/null 2>&1; then
-                    dir=$(dirname ${file} | uniq)
+                if [ -d "${file}" ]; then
+                    dir=$(dirname ${file})
                     mkdir -p ${overlayfs_dir}/${dir}
-                    mv ${rootfs_mnt}/${file} ${overlayfs_dir}/${dir}
+                    mv ${rootfs_mnt}/${file} ${overlayfs_dir}/${dir}/
+                else
+                    for f in $(ls ${file} 1>/dev/null 2>&1); do
+                        dir=$(dirname ${f})
+                        mkdir -p ${overlayfs_dir}/${dir}
+                        mv ${rootfs_mnt}/${f} ${overlayfs_dir}/${dir}/
+                    done
                 fi
             fi
         done < ${TOPDIR}/custom/${CUSTOMOS}/${src}
