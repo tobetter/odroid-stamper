@@ -21,6 +21,7 @@ usage() {
 	echo "    --compress: compress the final OS image using 'xz'."
 	echo "    --keep-builddir: prevent removing temporary directory"
 	echo "                     after building an image."
+	echo "    --kernel: kernel package name to use"
 	exit 1
 }
 
@@ -45,6 +46,7 @@ for opt in "$@"; do
 		--internal)	opt_internal=true;;
 		--keep-builddir)
 				opt_keep_builddir=true;;
+		--kernel=*)	opt_kernel_package="${opt#*=}";;
 		--custom=*)
 				opt_custom="${opt#*=}";;
 	esac

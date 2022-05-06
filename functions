@@ -402,6 +402,11 @@ do_preinstall() {
             ;;
     esac
 
+    DEFAULT_KERNEL_PACKAGE=$(get_kernel_package)
+    [ ! "x${opt_kernel_package}" = "x" ] && DEFAULT_KERNEL_PACKAGE=${opt_kernel_package}
+
+    echo ${DEFAULT_KERNEL_PACKAGE}
+
     FIXUPS=`ls -A1 ${rootfs_mnt}${fixups_dir}/*`
     for fixup in ${FIXUPS}; do
         sed -i \
@@ -410,7 +415,7 @@ do_preinstall() {
             -e "s,@@DEFAULT_APT_OPTIONS@@,$(get_default_apt_options ${FLAVOUR}),g" \
             -e "s,@@DEFAULT_FLAVOUR_PACKAGES@@,$(get_flavour_packages),g" \
             -e "s,@@DEFAULT_BLACKLIST_PACKAGES@@,$(get_blacklist_packages),g" \
-            -e "s,@@DEFAULT_KERNEL_PACKAGE@@,$(get_kernel_package),g" \
+            -e "s,@@DEFAULT_KERNEL_PACKAGE@@,${DEFAULT_KERNEL_PACKAGE},g" \
             -e "s,@@DEFAULT_BOOTSCRIPT_PACKAGE@@,$(get_bootscript_package),g" \
             -e "s,@@DEFAULT_MACHINE_NAME@@,$(get_machine_name),g" \
             -e "s,@@LINUX_KERNEL_CMDLINE@@,root=UUID=${UUID_ROOT} rootwait ro quiet,g" \
