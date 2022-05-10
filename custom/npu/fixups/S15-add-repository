@@ -1,0 +1,12 @@
+#!/bin/sh
+
+repo=ppa:deadsnakes/ppa
+
+if [ -z $(which add-apt-repository) ]; then
+apt update -y
+apt install @@DEFAULT_APT_OPTIONS@@ \
+		software-properties-common
+fi
+
+add-apt-repository ${repo} -y
+apt update -y

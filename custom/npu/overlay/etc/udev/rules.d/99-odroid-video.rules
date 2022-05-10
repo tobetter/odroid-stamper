@@ -1,0 +1,2 @@
+# /dev/video*
+SUBSYSTEM=="video4linux", ENV{DEVNAME}=="/dev/video*", MODE="0660"
