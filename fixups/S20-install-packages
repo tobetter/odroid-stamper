@@ -16,4 +16,9 @@ apt install @@DEFAULT_APT_OPTIONS@@ \
 	@@DEFAULT_KERNEL_PACKAGE@@ \
 	@@DEFAULT_BOOTSCRIPT_PACKAGE@@ || exit 1
 
+if ls /overlay/host/debs/*.deb 1>/dev/null 2>&1; then
+	dpkg -i $(ls /overlay/host/debs/*.deb)
+	apt install --fix-broken @@DEFAULT_APT_OPTIONS@@
+fi
+
 apt remove -y @@DEFAULT_BLACKLIST_PACKAGES@@
