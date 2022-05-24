@@ -109,6 +109,7 @@ if [ "x${LIVESYSTEM}" = "xtrue" ]; then
 	IMAGE_FILE=${IMAGE_FILE}-live
 fi
 
+IMAGE_FILE=$(echo ${IMAGE_FILE} | tr '/' '-')
 OUTFILE=${out_dir}/${IMAGE_FILE}
 
 if [ ! -d ${TOPDIR}/distro/${DISTRO}/${FLAVOUR} ]; then
