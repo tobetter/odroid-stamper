@@ -81,7 +81,7 @@ ALLOW_ROOT_LOGIN=$(allow_root_login)
 __EOF
 }
 
-distro() {
+osname() {
     case $1 in
         bionic | disco | focal | groovy | hirsute | jammy)
             echo "ubuntu"
@@ -95,7 +95,7 @@ distro() {
     esac
 }
 
-distro_version() {
+osversion () {
     case $1 in
         bionic)
             echo "18.04"
@@ -131,7 +131,7 @@ image_file() {
     if [ "x${OSNAME}" != "x" ]; then
         IMAGE_FILE_PREFIX="${OSNAME}-${BOARD}"
     else
-        IMAGE_FILE_PREFIX="$(distro ${1})-$(distro_version ${1})-${2}-${3}"
+        IMAGE_FILE_PREFIX="$(osname ${1})-$(osversion ${1})-${2}-${3}"
     fi
     echo "${IMAGE_FILE_PREFIX}-`date +%Y%m%d`"
 }
