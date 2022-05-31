@@ -1,0 +1,4 @@
+cloud-guest-utils
+cloud-init
+cloud-initramfs-copymods
+cloud-initramfs-dyn-netconf
