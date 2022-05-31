@@ -118,6 +118,8 @@ if [ ! -d ${TOPDIR}/distro/${DISTRO}/${FLAVOUR} ]; then
 	exit 0
 fi
 
+[ -f ${TOPDIR}/distro/${DISTRO}/common/functions ] && \
+	. ${TOPDIR}/distro/${DISTRO}/common/functions
 [ -f ${TOPDIR}/distro/${DISTRO}/${FLAVOUR}/functions ] && \
 	. ${TOPDIR}/distro/${DISTRO}/${FLAVOUR}/functions
 . ${TOPDIR}/boards/${BOARD}/functions

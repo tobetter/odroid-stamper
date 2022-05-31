@@ -114,6 +114,7 @@ get_packages() {
 get_flavour_packages() {
     local pkgs=""
 
+    pkgs="${pkgs} $(get_packages distro/${DISTRO}/common/packages)"
     pkgs="${pkgs} $(get_packages distro/${DISTRO}/${FLAVOUR}/packages)"
     pkgs="${pkgs} $(get_packages boards/${BOARD}/packages)"
     pkgs="${pkgs} $(get_packages boards/${BOARD}/distro/${DISTRO}/${FLAVOUR}/packages)"
@@ -130,6 +131,7 @@ get_flavour_packages() {
 get_blacklist_packages() {
     local pkgs=""
 
+    pkgs="${pkgs} $(get_packages distro/${DISTRO}/common/blacklist)"
     pkgs="${pkgs} $(get_packages distro/${DISTRO}/${FLAVOUR}/blacklist)"
     pkgs="${pkgs} $(get_packages boards/${BOARD}/blacklist)"
     pkgs="${pkgs} $(get_packages boards/${BOARD}/distro/${DISTRO}/${FLAVOUR}/blacklist)"
@@ -454,6 +456,8 @@ do_run_fixups() {
 
     [ -d ${TOPDIR}/overlay ] && rsync -a ${TOPDIR}/overlay/* ${rootfs_mnt}/overlay/
     [ -d ${WORKDIR}/overlay ] && rsync -a ${WORKDIR}/overlay/* ${rootfs_mnt}/overlay/
+    [ -d ${TOPDIR}/distro/${DISTRO}/common/overlay ] \
+        && rsync -a ${TOPDIR}/distro/${DISTRO}/common/overlay/* ${rootfs_mnt}/overlay
     [ -d ${TOPDIR}/distro/${DISTRO}/${FLAVOUR}/overlay ] \
         && rsync -a ${TOPDIR}/distro/${DISTRO}/${FLAVOUR}/overlay/* ${rootfs_mnt}/overlay
     [ -d ${TOPDIR}/custom/${CUSTOMOS}/overlay ] \
