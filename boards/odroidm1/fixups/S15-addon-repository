@@ -1,8 +1,15 @@
 #!/bin/sh
 
-CODENAME=$(lsb_release -cs)
+CODENAME=$(cat /etc/os-release | grep VERSION_CODENAME | cut -d'=' -f2)
 
-[ "x${CODENAME}" = "xfocal" ] || OPTION="[trusted=yes]"
+case ${CODENAME} in
+	"focal" | "buster")
+		OPTION=""
+		;;
+	*)
+		OPTION="[trusted=yes]"
+		;;
+esac
 
 cat>>/etc/apt/sources.list.d/ppa-linuxfactory-or-kr.list<<__EOF
 deb ${OPTION} http://ppa.linuxfactory.or.kr @@DEFAULT_DISTRO@@ rk3568
