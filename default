@@ -53,7 +53,7 @@ default_target_device() {
 }
 
 allow_root_login() {
-    echo false
+    echo true
 }
 
 default_user() {

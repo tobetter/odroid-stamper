@@ -1,7 +1,3 @@
-allow_root_login() {
-    echo true
-}
-
 get_default_apt_options() {
 	echo "-y"
 }
