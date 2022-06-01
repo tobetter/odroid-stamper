@@ -6,3 +6,7 @@ rootfs/
 out/
 
 *.squashfs
+
+*.img
+*.xz
+*.md5sum
