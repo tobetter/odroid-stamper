@@ -4,6 +4,7 @@ if [ -f /root/firstboot.sh ]; then
 	chmod +x /root/firstboot.sh
 	chown root:root /root/firstboot.sh
 
+	sed -i "s,@@UUID_BOOTFS@@,@@DEFAULT_DEV_BOOT@@,g" /root/firstboot.sh
 	sed -i "s,@@UUID_ROOTFS@@,@@DEFAULT_DEV_ROOTFS@@,g" /root/firstboot.sh
 fi
 
