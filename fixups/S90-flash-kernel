@@ -27,7 +27,7 @@ if [ "x@@LIVESYSTEM@@" = "xtrue" ]; then
 	if [ -f /etc/default/flash-kernel ]; then
 		. /etc/default/flash-kernel
 
-		sed -i "s/^LINUX_KERNEL_CMDLINE=.*/LINUX_KERNEL_CMDLINE=\"$LINUX_KERNEL_CMDLINE boot=casper toram\"/g" \
+		sed -i "s/^LINUX_KERNEL_CMDLINE=.*/LINUX_KERNEL_CMDLINE=\"$LINUX_KERNEL_CMDLINE boot=casper toram noprompt\"/g" \
 			/etc/default/flash-kernel
 	fi
 fi
