@@ -1,0 +1,13 @@
+byobu
+cloud-init
+cloud-initramfs-copymods
+cloud-initramfs-dyn-netconf
+cpp
+cron
+cryptsetup
+cryptsetup-bin
+cryptsetup-initramfs
+modemmanager
+packagekit
+snapd
+software-properties-common

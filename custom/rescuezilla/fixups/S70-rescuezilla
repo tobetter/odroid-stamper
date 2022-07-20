@@ -1,0 +1,42 @@
+#!/bin/sh
+
+#
+# Lightdm configuration and let it auto login
+#
+cat>/etc/lightdm/lightdm.conf<<__EOF
+[SeatDefaults]
+autologin-user=@@DEFAULT_USER@@
+user-session=openbox
+autologin-user-timeout=0
+__EOF
+
+#
+# Load default kernel drivers
+#
+echo "nbd" >> /etc/modules
+
+#
+# Replace OS name to 'RescueZilla' for boot label
+#
+sed -i "s/PRETTY_NAME=.*/PRETTY_NAME="RescueZilla"/g" /etc/os-release
+
+#
+# Copy desktop environments
+#
+rsync -a /home/ubuntu/ /home/@@DEFAULT_USER@@/
+rm -rf /home/ubuntu
+
+mkdir -p /home/@@DEFAULT_USER@@/Desktop
+for f in xfce4-terminal rescuezilla; do
+	ln -s /usr/share/applications/$f.desktop /home/@@DEFAULT_USER@@/Desktop/
+done
+chown -R @@DEFAULT_USER@@:@@DEFAULT_USER@@ /home/@@DEFAULT_USER@@/Desktop
+
+#
+# Plymouth
+#
+update-alternatives --install /usr/share/plymouth/themes/default.plymouth default.plymouth \
+	/usr/share/plymouth/themes/rescuezilla-logo/rescuezilla-logo.plymouth 100
+update-alternatives --set default.plymouth \
+	/usr/share/plymouth/themes/rescuezilla-logo/rescuezilla-logo.plymouth
+
