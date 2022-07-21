@@ -455,17 +455,17 @@ get_install_fixups() {
 }
 
 do_copy_overlays() {
-    [ -d ${1} ] && rsync -a ${1}/* ${rootfs_mnt}/overlay/
+    [ -d ${1} ] && rsync -a ${1} ${rootfs_mnt}/overlay/
 }
 
 do_run_fixups() {
     mkdir -p ${rootfs_mnt}/overlay
 
-    do_copy_overlays ${TOPDIR}/overlay
-    do_copy_overlays ${WORKDIR}/overlay
-    do_copy_overlays ${TOPDIR}/distro/${DISTRO}/common/overlay
-    do_copy_overlays ${TOPDIR}/distro/${DISTRO}/${FLAVOUR}/overlay
-    do_copy_overlays ${TOPDIR}/custom/${CUSTOMOS}/overlay
+    do_copy_overlays ${TOPDIR}/overlay/
+    do_copy_overlays ${WORKDIR}/overlay/
+    do_copy_overlays ${TOPDIR}/distro/${DISTRO}/common/overlay/
+    do_copy_overlays ${TOPDIR}/distro/${DISTRO}/${FLAVOUR}/overlay/
+    do_copy_overlays ${TOPDIR}/custom/${CUSTOMOS}/overlay/
 
     for fixup in $(get_install_fixups); do
         chroot ${rootfs_mnt} ${QEMU_BINARY} \
