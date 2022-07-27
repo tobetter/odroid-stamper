@@ -1,0 +1,16 @@
+#!/bin/sh
+
+repo=ppa:deadsnakes/ppa
+
+if [ -z $(which add-apt-repository) ]; then
+apt update -y
+apt install @@DEFAULT_APT_OPTIONS@@ \
+		software-properties-common
+fi
+
+add-apt-repository ${repo} -y
+apt install -y curl gnupg2 lsb-release
+curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key  -o /usr/share/keyrings/ros-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu @@DEFAULT_DISTRO@@ main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null
+cat /etc/apt/sources.list.d/ros2.list
+apt update -y && apt upgrade -y

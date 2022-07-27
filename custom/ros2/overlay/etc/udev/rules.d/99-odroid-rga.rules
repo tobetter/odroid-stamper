@@ -1,0 +1,2 @@
+# /dev/rga
+SUBSYSTEM=="misc", ENV{DEVNAME}=="/dev/rga", GROUP="odroid", MODE="0660"

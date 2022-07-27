@@ -1,0 +1,5 @@
+#!/bin/sh
+
+if [ -f /boot/config.ini ]; then
+	sed -i '/generic/,/overlays/ s/^overlays=.*$/overlays=\"rknpu ov5647\"/' /boot/config.ini
+fi

@@ -1,0 +1,12 @@
+cmake
+g++
+git
+gstreamer1.0-plugins-good
+libopencv-dev
+librga-dev
+make
+python3-colcon-common-extensions
+python3-pip
+rkaiq
+ros-foxy-ros-base
+virtualenv

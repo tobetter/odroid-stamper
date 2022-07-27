@@ -1,0 +1,14 @@
+#!/bin/sh
+
+HOME=/home/odroid
+RKNN=/home/odroid/rknpu2/runtime/Linux/librknn_api/aarch64/librknnrt.so
+
+echo "========== git clone start =========="
+git clone https://github.com/hardkernel/rknpu2 ${HOME}/rknpu2
+echo "========== git clone finish =========="
+
+echo "========== examples seting start =========="
+chown -R odroid:odroid ${HOME}/rknpu2/
+[ -f ${RKNN} ] && cp ${RKNN} /usr/lib/librknnrt.so
+rm -rf ${HOME}/rknpu2
+echo "========== examples seting finish =========="
