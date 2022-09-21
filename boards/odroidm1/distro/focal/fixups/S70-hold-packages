@@ -1,0 +1,3 @@
+#!/bin/sh
+
+apt-mark hold libwayland-egl1

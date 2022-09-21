@@ -384,6 +384,8 @@ do_preinstall() {
         && rsync -a ${TOPDIR}/distro/${DISTRO}/${FLAVOUR}/fixups/* ${rootfs_mnt}/${fixups_dir}
     [ -d ${TOPDIR}/boards/${BOARD}/fixups ] \
         && rsync -a ${TOPDIR}/boards/${BOARD}/fixups/* ${rootfs_mnt}/${fixups_dir}
+    [ -d ${TOPDIR}/boards/${BOARD}/distro/${DISTRO}/fixups ] \
+        && rsync -a ${TOPDIR}/boards/${BOARD}/distro/${DISTRO}/fixups/* ${rootfs_mnt}/${fixups_dir}
     [ -d ${TOPDIR}/custom/${CUSTOMOS}/fixups ] \
         && rsync -a ${TOPDIR}/custom/${CUSTOMOS}/fixups/* ${rootfs_mnt}/${fixups_dir}
 
