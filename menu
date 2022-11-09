@@ -37,6 +37,7 @@ do_menu_board() {
         "odroidc2" "Hardkernel ODROID-C2" \
         "odroidxu4" "Hardkernel ODROID-XU4" \
         "odroidn2" "Hardkernel ODROID-N2" \
+        "odroidn2l" "Hardkernel ODROID-N2L" \
         "odroidn2plus" "Hardkernel ODROID-N2Plus" \
         "odroidc4" "Hardkernel ODROID-C4" \
         "odroidhc4" "Hardkernel ODROID-HC4" \

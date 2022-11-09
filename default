@@ -5,6 +5,9 @@ get_board() {
             "Hardkernel ODROID-N2")
                 echo "odroidn2"
                 ;;
+            "Hardkernel ODROID-N2L")
+                echo "odroidn2l"
+                ;;
             "Hardkernel ODROID-N2Plus")
                 echo "odroidn2plus"
                 ;;
