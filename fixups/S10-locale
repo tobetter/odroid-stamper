@@ -1,3 +1,7 @@
 #!/bin/sh
 
+if [ ! -f /usr/sbin/locale-gen ]; then
+	apt update && apt install -y locales
+fi
+
 locale-gen
