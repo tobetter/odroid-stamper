@@ -11,10 +11,8 @@ case ${CODENAME} in
 		;;
 esac
 
-cat>>/etc/apt/sources.list.d/ppa-linuxfactory-or-kr.list<<__EOF
+cat>/etc/apt/sources.list.d/ppa-linuxfactory-or-kr.list<<__EOF
+deb ${OPTION} http://ppa.linuxfactory.or.kr @@DEFAULT_DISTRO@@ main
 deb ${OPTION} http://ppa.linuxfactory.or.kr @@DEFAULT_DISTRO@@ rk3568
 deb ${OPTION} http://ppa.linuxfactory.or.kr @@DEFAULT_DISTRO@@ rockchip
 __EOF
-
-sed -i "/non-free/d" /etc/apt/sources.list.d/ppa-linuxfactory-or-kr.list
-sed -i "/contrib/d" /etc/apt/sources.list.d/ppa-linuxfactory-or-kr.list
