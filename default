@@ -23,6 +23,9 @@ get_board() {
             "ODROID-M1")
                 echo "odroidm1"
                 ;;
+            "ODROID-M1S")
+                echo "odroidm1s"
+                ;;
             *)
                 echo "odroidn2plus"
                 ;;
@@ -32,7 +35,7 @@ get_board() {
 
 get_arch() {
     case ${1} in
-        odroidc2 | odroidn2* | odroidc4 | odroidhc4 | odroidgo2 | odroidm1)
+        odroidc2 | odroidn2* | odroidc4 | odroidhc4 | odroidgo2 | odroidm1 | odroidm1s)
             echo "arm64"
             ;;
         odroidxu4)

@@ -43,6 +43,7 @@ do_menu_board() {
         "odroidhc4" "Hardkernel ODROID-HC4" \
         "odroidgo2" "Hardkernel ODROID-GO2" \
         "odroidm1" "Hardkernel ODROID-M1" \
+        "odroidm1s" "Hardkernel ODROID-M1S" \
         2>&1 >/dev/tty)
 
     ret=$?
