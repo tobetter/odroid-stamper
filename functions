@@ -468,6 +468,7 @@ do_run_fixups() {
 
     do_copy_overlays ${TOPDIR}/overlay/
     do_copy_overlays ${WORKDIR}/overlay/
+    do_copy_overlays ${TOPDIR}/boards/${BOARD}/distro/${DISTRO}/overlay/
     do_copy_overlays ${TOPDIR}/distro/${DISTRO}/common/overlay/
     do_copy_overlays ${TOPDIR}/distro/${DISTRO}/${FLAVOUR}/overlay/
     do_copy_overlays ${TOPDIR}/custom/${CUSTOMOS}/overlay/
