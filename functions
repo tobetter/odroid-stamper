@@ -446,6 +446,7 @@ do_postinstall() {
         rm -f ${rootfs_mnt}/${QEMU_BINARY}
     fi
     rm -f ${rootfs_mnt}/tmp/face.png
+    rm -rf ${rootfs_mnt}/host
     rm -rf ${rootfs_mnt}${fixups_dir}
     rm -rf ${rootfs_mnt}/etc/apt/sources.list.d/ppa_linuxfactory_or_kr.list
 }
