@@ -481,6 +481,14 @@ do_run_fixups() {
     done
 }
 
+do_collect_uboot() {
+    if [ -e ${rootfs_mnt}/usr/lib/u-boot/${BOARD} ]; then
+        rm -rf ${TOPDIR}/u-boot
+        mkdir -p ${TOPDIR}/u-boot/sd_fuse && \
+            cp -a ${rootfs_mnt}/usr/lib/u-boot/${BOARD}/* ${TOPDIR}/u-boot/sd_fuse/
+    fi
+}
+
 do_query_latest_tarball() {
     local host_url=${1}
     local arch=${2}
@@ -555,6 +563,7 @@ do_create_image() {
     do_mount
     do_preinstall
     do_run_fixups
+    do_collect_uboot
     do_postinstall
     do_cleanup
     do_unmount
@@ -566,7 +575,11 @@ do_create_image() {
 }
 
 download_uboot() {
-	echo "U-Boot won't work this build."
+    if [ -e ${TOPDIR}/u-boot/sd_fuse ]; then
+        (cd ${TOPDIR}/u-boot;
+            tar czvf ${download_dir}/u-boot.tar.gz sd_fuse/*
+        )
+    fi
 }
 
 do_flash_bootloader() {
