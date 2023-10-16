@@ -1,7 +1,8 @@
 #!/bin/sh
 
 echo "I: create default user account"
-adduser --gecos @@DEFAULT_USER@@ --disabled-login @@DEFAULT_USER@@
+adduser --gecos @@DEFAULT_USER@@ --disabled-login @@DEFAULT_USER@@ \
+	--shell /bin/bash
 
 echo "I: set default user password"
 echo "@@DEFAULT_USER@@:@@DEFAULT_USER_PASSWD@@" | chpasswd
