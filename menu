@@ -75,6 +75,7 @@ do_menu_distro() {
         "groovy" "Ubuntu Groovy (20.10)" \
         "hirsute" "Ubuntu Hirsute (21.04)" \
         "jammy" "Ubuntu Jammy (22.04)" \
+        "mantic" "Ubuntu Mantic (23.10)" \
         "buster" "Debian Buster" \
         "bullseye" "Debian Bullseye" \
         "bookworm" "Debian Bookworm" \
