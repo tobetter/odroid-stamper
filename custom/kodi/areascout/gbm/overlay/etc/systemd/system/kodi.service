@@ -1,0 +1,13 @@
+[Unit]
+Description=Kodi for ODROID
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+@@ENVIRONMENT_HOME@@
+ExecStart=/usr/bin/kodi
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,6 @@
+[Allow all users to shutdown and reboot]
+Identity=unix-user:*
+Action=org.freedesktop.login1.*;org.freedesktop.upower.*;org.freedesktop.consolekit.system.*
+ResultActive=yes
+ResultAny=yes
+ResultInactive=yes

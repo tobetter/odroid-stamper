@@ -1,0 +1,29 @@
+#!/bin/sh
+
+# Kodi permissions
+echo "I: set default groups for Kodi"
+usermod -aG sudo,adm,audio,operator,input,video,tty,staff,games,users,plugdev,netdev,disk @@DEFAULT_USER@@
+
+# Kodi Default Settings
+
+# Adjust Refreshrate -> 'Always'
+xmlstarlet edit --inplace \
+	--update "settings/section/category/group/setting[@id='videoplayer.adjustrefreshrate']/default" \
+	--value 1 \
+	/usr/share/kodi/system/settings/settings.xml
+
+# Allow using DRM Prime Decoder to use H/W decoder
+xmlstarlet edit --inplace \
+	--update "settings/section/category/group/setting[@id='videoplayer.useprimedecoder']/default" \
+	--value true \
+	--update "settings/section/category/group/setting[@id='videoplayer.useprimedecoderforhw']/default" \
+	--value true \
+	--update "settings/section/category/group/setting[@id='videoplayer.useprimerenderer']/default" \
+	--value 0 \
+	/usr/share/kodi/system/settings/linux.xml
+
+# Kodi Service
+sed -i "s|@@ENVIRONMENT_HOME@@|Environment=\"HOME=/home/@@DEFAULT_USER@@\"|g" /etc/systemd/system/kodi.service
+
+chmod 644 /etc/systemd/system/kodi.service
+systemctl enable kodi
