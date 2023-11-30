@@ -577,7 +577,7 @@ do_create_image() {
 download_uboot() {
     if [ -e ${TOPDIR}/u-boot/sd_fuse ]; then
         (cd ${TOPDIR}/u-boot;
-            tar czvf ${download_dir}/u-boot.tar.gz sd_fuse/*
+            tar czvf ${1} sd_fuse/*
         )
     fi
 }
@@ -599,7 +599,10 @@ do_flash_bootloader() {
                 ./sd_fusing.sh ${disk} 2>/dev/null
             )
         fi
+        rm -f ${uboot_tarball}
     fi
+
+    rm -rf ${TOPDIR}/u-boot
 }
 
 do_finalize_image() {
