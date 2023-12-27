@@ -4,7 +4,7 @@ StartLimitIntervalSec=0
 
 [Service]
 Type=simple
-Restart=always
+Restart=no
 RestartSec=1
 @@ENVIRONMENT_HOME@@
 ExecStart=/usr/bin/kodi
