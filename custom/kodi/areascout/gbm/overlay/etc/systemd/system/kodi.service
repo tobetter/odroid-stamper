@@ -6,7 +6,7 @@ StartLimitIntervalSec=0
 Type=simple
 Restart=no
 RestartSec=1
-User=odroid
+@@DEFAULT_SERVICE_USER@@
 @@ENVIRONMENT_HOME@@
 ExecStart=/bin/bash -c 'cd $HOME;export XDG_RUNTIME_DIR="/run/user/$UID";export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$UID/bus";sudo systemctl restart user@$UID.service;sleep 4;/usr/bin/pulseaudio --start -D;/usr/bin/kodi --audio-backend=alsa'
 

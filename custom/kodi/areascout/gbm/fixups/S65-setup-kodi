@@ -24,6 +24,10 @@ xmlstarlet edit --inplace \
 
 # Kodi Service
 sed -i "s|@@ENVIRONMENT_HOME@@|Environment=\"HOME=/home/@@DEFAULT_USER@@\"|g" /etc/systemd/system/kodi.service
+sed -i "s|@@DEFAULT_SERVICE_USER@@|Environment=\"User=@@DEFAULT_USER@@\"|g" /etc/systemd/system/kodi.service
+
+# Set default Pulseaudio output sink for Kodi
+sed -i 's|#set-default-sink output|set-default-sink 0|g' /etc/pulse/default.pa
 
 chmod 644 /etc/systemd/system/kodi.service
 systemctl enable kodi
