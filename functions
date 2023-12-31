@@ -3,11 +3,21 @@ rootfs_mnt=${build_dir}/rootfs
 fixups_dir=/host/fixups
 
 do_unmount() {
-    echo "I: unmounting devices..."
+    echo "do_unmount()"
 
+    unmount_error=""
+
+    mountpoint ${rootfs_mnt}/sys >/dev/null     && { umount ${rootfs_mnt}/sys     || { echo "umount sys failed" ; unmount_error=1 ; } ; }
+    mountpoint ${rootfs_mnt}/proc >/dev/null    && { umount ${rootfs_mnt}/proc    || { echo "umount proc failed" ; unmount_error=1 ; } ; }
+    mountpoint ${rootfs_mnt}/dev/pts >/dev/null && { umount ${rootfs_mnt}/dev/pts || { echo "umount dev/pts failed" ; unmount_error=1 ; } ; }
+    mountpoint ${rootfs_mnt}/dev >/dev/null     && { umount ${rootfs_mnt}/dev     || { echo "umount dev failed" ; unmount_error=1 ; } ; }
+    mountpoint ${rootfs_mnt}/boot >/dev/null    && { umount ${rootfs_mnt}/boot    || { echo "umount boot failed" ; unmount_error=1 ; } ; }
+
+    echo "I: unmounting devices..."
     if [ ! -b ${TARGET_DEVICE} ]; then
         if [ "x${LOOPBACK}" != "x" ]; then
-            losetup -d ${LOOPBACK} 2>/dev/null
+            echo "cleanup loopback device ${LOOPBACK}"
+            losetup -d ${LOOPBACK} || ( echo "losetup -d failed" ; unmount_error=1 )
         fi
     fi
 
@@ -15,11 +25,10 @@ do_unmount() {
         . ${TOPDIR}/custom/${CUSTOMOS}/hooks/umount
     fi
 
-    umount -f ${rootfs_mnt}/sys 2>/dev/null
-    umount -f ${rootfs_mnt}/proc 2>/dev/null
-    umount -f ${rootfs_mnt}/dev/pts 2>/dev/null
-    umount -f ${rootfs_mnt}/dev 2>/dev/null
-    umount -f ${rootfs_mnt}/boot 2>/dev/null
+    if [ "$unmount_error" ] ; then
+        echo "an error occured during unmounting ressources, check mountpoints and losetup"
+        kill -9 $$
+    fi
 }
 
 cleanup() {
@@ -31,10 +40,10 @@ cleanup() {
 
     umount -f ${boot_mnt} ${rootfs_mnt} 2>/dev/null
     if [ "x${opt_keep_builddir}" != "xtrue" ]; then
-        rm -rf ${boot_mnt} ${rootfs_mnt}
+        rm -rf --one-file-system ${boot_mnt} ${rootfs_mnt}
     fi
     if [ "$(ls ${build_dir} | wc -l)" = "0" ]; then
-        rm -rf ${build_dir}
+        rm -rf --one-file-system ${build_dir}
     fi
 }
 
@@ -360,7 +369,7 @@ do_extract() {
     echo "I: extracting ${file} to ${rootfs_mnt}..."
     case ${file} in
         *.squashfs)
-            sudo unsquashfs -f -d ${rootfs_mnt} ${file}
+            sudo unsquashfs -f -d ${rootfs_mnt} ${file} || panic "unsquashfs failed"
             ;;
 
         *.tar.gz)
