@@ -22,12 +22,41 @@ xmlstarlet edit --inplace \
 	--value 0 \
 	/usr/share/kodi/system/settings/linux.xml
 
-# Kodi Service
-sed -i "s|@@ENVIRONMENT_HOME@@|Environment=\"HOME=/home/@@DEFAULT_USER@@\"|g" /etc/systemd/system/kodi.service
-sed -i "s|@@DEFAULT_SERVICE_USER@@|Environment=\"User=@@DEFAULT_USER@@\"|g" /etc/systemd/system/kodi.service
+# Add color prompt to both Root and User
+sed -i '1iforce_color_prompt=yes' /root/.bashrc
+sed -i '1iforce_color_prompt=yes' /home/@@DEFAULT_USER@@/.bashrc
+
+# Create local user service to autostart Kodi
+mkdir -p /home/@@DEFAULT_USER@@/.local/share/systemd/user
+cat <<EOM > /home/@@DEFAULT_USER@@/.local/share/systemd/user/kodi.service
+[Unit]
+Description=Kodi for ODROID
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+KillMode=process
+Restart=no
+@@ENVIRONMENT_HOME@@
+ExecStart=/bin/bash -c 'sleep 4;/usr/bin/pulseaudio --start -D;/usr/bin/kodi --audio-backend=alsa;exit 0'
+
+[Install]
+WantedBy=default.target
+EOM
+sed -i "s|@@ENVIRONMENT_HOME@@|Environment=\"HOME=/home/@@DEFAULT_USER@@\"|g" /home/@@DEFAULT_USER@@/.local/share/systemd/user/kodi.service
+chown -R @@DEFAULT_USER@@:@@DEFAULT_USER@@ /home/@@DEFAULT_USER@@/.local
+chmod 644 /home/@@DEFAULT_USER@@/.local/share/systemd/user/kodi.service
+
+#Enable service
+mkdir -p /home/@@DEFAULT_USER@@/.config/systemd/user/default.target.wants
+ln -s /home/@@DEFAULT_USER@@/.local/share/systemd/user/kodi.service /home/@@DEFAULT_USER@@/.config/systemd/user/default.target.wants/kodi.service
+chown -R @@DEFAULT_USER@@:@@DEFAULT_USER@@ /home/@@DEFAULT_USER@@/.config
+
+# Enable lingering for user who starts Kodi (user-manager will start automatically)
+sed -i "s|#KillExcludeUsers=root|KillExcludeUsers=@@DEFAULT_USER@@|g" /etc/systemd/logind.conf
+mkdir -p /var/lib/systemd/linger
+touch /var/lib/systemd/linger/@@DEFAULT_USER@@
+chmod 0644 /var/lib/systemd/linger/@@DEFAULT_USER@@
 
 # Set default Pulseaudio output sink for Kodi
 sed -i 's|#set-default-sink output|set-default-sink 0|g' /etc/pulse/default.pa
-
-chmod 644 /etc/systemd/system/kodi.service
-systemctl enable kodi
