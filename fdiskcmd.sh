@@ -4,6 +4,7 @@
 . ${1}
 
 do_fdisk_commands() {
+	[ ! -z ${TOTAL_SECTORS} ] || return
 
 	TOTAL=0
 	for (( p = 0 ; p < ${#PART[@]} ; p++ )); do

@@ -297,15 +297,35 @@ do_create_partition() {
     local boot_blk=$((${2} * 1024 * 1024 / 512 - 1))
     local root_blk=$(($(du -s --block-size=512 ${rootfs_mnt} | cut -f1) * 12 / 10))
     local boot_pstart=$(get_reserved_sectors)
+    local fdiskcmd=""
 
     [ "x${boot_pstart}" = "x" ] && boot_pstart=2048
+
+    if [ -f ${TOPDIR}/custom/${CUSTOMOS}/partitions ]; then
+        echo ${TOPDIR}/custom/${CUSTOMOS}/partitions
+        . ${TOPDIR}/custom/${CUSTOMOS}/partitions
+
+        if [ ! -z ${TOTAL_SECTORS} ]; then
+            fdiskcmd=$(${TOPDIR}/fdiskcmd.sh ${TOPDIR}/custom/${CUSTOMOS}/partitions)
+        fi
+    fi
+
+    if [ ! -z ${EXTRA_BOOT_SIZE} ]; then
+        blks=$((${EXTRA_BOOT_SIZE} * 1024 * 1024 / 512 - 1))
+        boot_blk=$((${boot_blk} + ${blks}))
+    fi
+    if [ ! -z ${EXTRA_ROOT_SIZE} ]; then
+        blks=$((${EXTRA_ROOT_SIZE} * 1024 * 1024 / 512 - 1))
+        root_blk=$((${root_blk} + ${blks}))
+    fi
 
     local boot_size=$((${boot_pstart} + ${boot_blk}))
     local blocks=$((${boot_pstart} + ${boot_blk} + ${root_blk}))
 
-    if [ -f ${TOPDIR}/custom/${CUSTOMOS}/partitions ]; then
-        . ${TOPDIR}/custom/${CUSTOMOS}/partitions
-        blocks=${TOTAL_SECTORS}
+    blocks=${TOTAL_SECTORS:-${blocks}}
+
+    if [ "x${fdiskcmd}" = "x" ]; then
+        fdiskcmd="n\np\n\n${boot_pstart}\n${boot_size}\nn\np\n\n$((${boot_size} + 1))\n\nw\n"
     fi
 
     if [ ! -b ${disk} ]; then
@@ -325,16 +345,9 @@ do_create_partition() {
     [ "${BASH_VERSION}" = "" ] || BACKSLASH_ESCAPE="-e"
 
     echo "I: creating a partition table to '${disk}'"
-    if [ -f ${TOPDIR}/custom/${CUSTOMOS}/partitions ]; then
-        echo ${BACKSLASH_ESCAPE} \
-            $(${TOPDIR}/fdiskcmd.sh ${TOPDIR}/custom/${CUSTOMOS}/partitions) \
-            | fdisk ${disk} >/dev/null
-    fi
-
-    echo ${BACKSLASH_ESCAPE} \
-        "n\np\n\n${boot_pstart}\n${boot_size}\n" \
-        "n\np\n\n$((${boot_size} + 1))\n\n" \
-        "w\n" | fdisk ${disk} >/dev/null
+    echo fdiskcmd=${fdiskcmd}
+    echo ${BACKSLASH_ESCAPE} ${fdiskcmd} | fdisk ${disk} \
+        || panic "failed to create partition table" >/dev/null
     partprobe
 
     if [ ! -b ${disk} ]; then
