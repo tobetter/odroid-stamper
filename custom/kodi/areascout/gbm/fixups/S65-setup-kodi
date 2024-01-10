@@ -47,7 +47,7 @@ sed -i "s|@@ENVIRONMENT_HOME@@|Environment=\"HOME=/home/@@DEFAULT_USER@@\"|g" /h
 chown -R @@DEFAULT_USER@@:@@DEFAULT_USER@@ /home/@@DEFAULT_USER@@/.local
 chmod 644 /home/@@DEFAULT_USER@@/.local/share/systemd/user/kodi.service
 
-#Enable service
+# Enable service
 mkdir -p /home/@@DEFAULT_USER@@/.config/systemd/user/default.target.wants
 ln -s /home/@@DEFAULT_USER@@/.local/share/systemd/user/kodi.service /home/@@DEFAULT_USER@@/.config/systemd/user/default.target.wants/kodi.service
 chown -R @@DEFAULT_USER@@:@@DEFAULT_USER@@ /home/@@DEFAULT_USER@@/.config
@@ -57,6 +57,10 @@ sed -i "s|#KillExcludeUsers=root|KillExcludeUsers=@@DEFAULT_USER@@|g" /etc/syste
 mkdir -p /var/lib/systemd/linger
 touch /var/lib/systemd/linger/@@DEFAULT_USER@@
 chmod 0644 /var/lib/systemd/linger/@@DEFAULT_USER@@
+
+# Set environment variables for user, needed e.g to restart Kodi service if user exits to shell
+echo 'export XDG_RUNTIME_DIR="/run/user/$UID"' >> /home/@@DEFAULT_USER@@/.bashrc
+echo 'export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$UID/bus"' >> /home/@@DEFAULT_USER@@/.bashrc
 
 # Set default Pulseaudio output sink for Kodi
 sed -i 's|#set-default-sink output|set-default-sink 0|g' /etc/pulse/default.pa
