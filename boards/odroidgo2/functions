@@ -3,7 +3,7 @@ get_machine_name() {
 }
 
 get_kernel_package() {
-	echo "linux-image-odroidgo2"
+	echo "odroidgo2"
 }
 
 get_bootscript_package() {

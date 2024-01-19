@@ -16,7 +16,7 @@ apt install @@DEFAULT_APT_OPTIONS@@ \
 	rsync \
 	network-manager \
 	@@DEFAULT_FLAVOUR_PACKAGES@@ \
-	@@DEFAULT_KERNEL_PACKAGE@@ \
+	linux-image-@@DEFAULT_KERNEL_PACKAGE@@ \
 	@@DEFAULT_BOOTSCRIPT_PACKAGE@@ || exit 1
 
 if ls /overlay/host/debs/*.deb 1>/dev/null 2>&1; then

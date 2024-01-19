@@ -5,10 +5,10 @@ get_machine_name() {
 get_kernel_package() {
 	case ${DISTRO} in
 		focal)
-			echo "linux-image-5.10.0-odroid-arm64"
+			echo "5.10.0-odroid-arm64"
 			;;
 		*)
-			echo "linux-image-6.1.0-odroid-arm64"
+			echo "6.1.0-odroid-arm64"
 			;;
 	esac
 }
