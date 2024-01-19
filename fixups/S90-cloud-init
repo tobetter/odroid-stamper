@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# During boot the operating system’s init system will check for the existence
+# of this file. If it exists, cloud-init will not be started.
+touch /etc/cloud/cloud-init.disabled
+
+# cloud-initramfs-growroot is going to run growpart on the root filesystem
+# during the initramfs unless one of the following files exists on the root
+# filesystem:
+touch /etc/growroot-disabled
+
+update-initramfs -u
