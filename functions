@@ -363,7 +363,7 @@ do_extract() {
     [ -f ${file} ] || panic "missing file ${file}"
 
     echo "I: extracting ${file} to ${rootfs_mnt}..."
-    case ${file} in
+    case $(basename ${file}) in
         *.squashfs)
             sudo unsquashfs -f -d ${rootfs_mnt} ${file} || panic "unsquashfs failed"
             ;;
@@ -372,6 +372,17 @@ do_extract() {
             pv ${file} \
                 | tar xzf - --strip-component=1 -C ${rootfs_mnt} \
                     || panic "E: error while extracting"
+            ;;
+
+        debian-*.raw)
+            tmpdir=$(mktemp -d) && mkdir -p ${tmpdir}
+            sudo losetup -fP ${file} \
+                && LOOPBACK=$(get_lookback_device ${file}) \
+                && sudo mount ${LOOPBACK}p1 ${tmpdir} \
+                && sudo cp -a ${tmpdir}/* ${rootfs_mnt} \
+                && sudo umount ${tmpdir} \
+                && sudo losetup -D ${LOOPBACK}
+            rm -rf ${tmpdir} ${file}
             ;;
     esac
 }
@@ -494,11 +505,10 @@ do_collect_uboot() {
     fi
 }
 
-do_query_latest_tarball() {
-    local host_url=${1}
-    local arch=${2}
-    local codename=${3}
-    local flavour=${4}
+do_url_of_cloudimage() {
+    local arch=${1}
+    local codename=${2}
+    local flavour=${3}
 
     case ${flavour} in
         *-desktop* | weston)
@@ -506,65 +516,70 @@ do_query_latest_tarball() {
             ;;
     esac
 
-    file=$(lynx -dump -listonly ${host_url}/tarball/${arch}/${codename}/ | \
-                grep tar.gz | grep ${flavour} | sort -r | head -n 1 | \
-                awk '{print $2}')
+    case ${codename} in
+        # Debian Official Cloud Images
+        buster | bullseye | bookworm)
+            file=$(lynx -dump -listonly https://cloud.debian.org/images/cloud/${codename}/latest \
+                | grep generic-${arch}.tar.xz | awk '{print $2}' | uniq)
+            ;;
 
-    if [ "x${file}" = "x" ]; then
+        # Ubuntu Cloud Images
+        focal | jammy | mantic)
             file="https://cloud-images.ubuntu.com/${codename}/current/${codename}-server-cloudimg-${arch}.squashfs"
-    fi
+            ;;
+    esac
 
     echo ${file}
 }
 
-do_download_tarball() {
+do_download_cloudimage() {
     local url=${1}
-    local tarball=${2}
+    local cloudimage=${2}
     local download=true
 
     [ "x${url}" = "x" ] && panic "unknown url file"
-    [ "x${tarball}" = "x" ] && panic "unknown tarball file"
+    [ "x${cloudimage}" = "x" ] && panic "unknown cloudimage file"
 
-    case ${tarball} in
+    case $(basename ${cloudimage}) in
         *.tar.gz)
-            if [ -f ${tarball} ]; then
+            if [ -f ${cloudimage} ]; then
                 wget ${url%.tar.gz}.md5sums.txt --quiet -O .foo.md5sums.txt || \
                     panic "failed to download MD5SUM file '${rul}'"
                 hash_remote=$(cat .foo.md5sums.txt | \
-                    grep $(basename ${tarball}) | awk '{print $1}')
-                hash_local=$(md5sum ${tarball} | awk '{print $1}')
+                    grep $(basename ${cloudimage}) | awk '{print $1}')
+                hash_local=$(md5sum ${cloudimage} | awk '{print $1}')
                 if [ "${hash_remote}" = "${hash_local}" ]; then
                     download=false
                 else
-                    rm -f ${tarball}
+                    rm -f ${cloudimage}
                 fi
             fi
             ;;
         *)
-            if [ -f ${tarball} ]; then
+            if [ -f ${cloudimage} ]; then
                 download=false
             fi
 			;;
     esac
 
     if [ "${download}" = true ]; then
-        wget ${url} -O ${tarball} || \
-            panic "failed to download tarball '${url}'"
+        wget ${url} -O ${cloudimage} || \
+            panic "failed to download cloudimage '${url}'"
     fi
 }
 
 do_create_image() {
     local baseimage=${1}
-    local tarball=${2}
+    local cloudimage=${2}
 
     [ "x${baseimage}" = "x" ] && panic "no given image file name"
-    [ "x${tarball}" = "x" ] && panic "no given tarball"
+    [ "x${cloudimage}" = "x" ] && panic "no given cloudimage"
 
     umount ${boot_mnt} ${rootfs_mnt} 2>/dev/null
     rm -rf ${boot_mnt} ${rootfs_mnt}
     mkdir -p ${boot_mnt} ${rootfs_mnt}
 
-    do_extract ${tarball}
+    do_extract ${cloudimage}
     do_mount
     do_preinstall
     do_run_fixups
@@ -643,14 +658,31 @@ do_custom_installer() {
 
     mkdir -p ${download_dir} ${out_dir}
 
-    echo "I: querying decent base files for ${ARCH}/${DISTRO}/${FLAVOUR}"
-    url=$(do_query_latest_tarball http://ppa.linuxfactory.or.kr/images \
-        ${ARCH} ${DISTRO} ${FLAVOUR})
-    [ "x${url}" = "x" ] && panic "Invalid URL - ${url}"
+    #
+    # Get URL of official Cloud Image for Debian/Ubuntu
+    #
+    echo "I: querying base official Cloud Image for ${ARCH}/${DISTRO}/${FLAVOUR}"
+    url=$(do_url_of_cloudimage ${ARCH} ${DISTRO} ${FLAVOUR})
+    [ "x${url}" = "x" ] && panic "E: invalid URL - ${url}"
 
-    tarball=${download_dir}/$(basename ${url})
-    do_download_tarball ${url} ${tarball}
-    do_create_image ${TARGET_DEVICE} ${tarball}
+    local cloudimage=${download_dir}/$(basename ${url})
+    do_download_cloudimage ${url} ${cloudimage}
+
+    #
+    # Extract raw Cloud Image
+    #
+    # Compressed Debian Cloud Image contains 'disk.raw' that is real Cloud
+    # Image, not compressing itself. So needs to extract it and rename it.
+    #
+    case $(basename ${cloudimage}) in
+        debian-*.tar.xz)
+            tar xf ${cloudimage} disk.raw || panic "E: cannot extract raw Debian Cloud Image"
+            cloudimage=${cloudimage%.tar.xz}.raw
+            mv disk.raw ${cloudimage}
+            ;;
+    esac
+
+    do_create_image ${TARGET_DEVICE} ${cloudimage}
 
     case $(readlink -f ${TARGET_DEVICE}) in
         /dev/sd*)
