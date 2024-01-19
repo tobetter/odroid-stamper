@@ -15,4 +15,7 @@ UUID="@@DEFAULT_DEV_BOOT@@" /boot ext2 rw,relatime,errors=continue 0 0
 __EOF
 fi
 
+# Remove EFI partition not to mount
+sed -i "/\/boot\/efi/d" /etc/fstab
+
 update-initramfs -u
