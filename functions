@@ -358,35 +358,6 @@ do_create_partition() {
         || panic "failed to create partition '$(get_part_root)'"
 }
 
-do_extract() {
-    local file=${1}
-    [ -f ${file} ] || panic "missing file ${file}"
-
-    echo "I: extracting ${file} to ${rootfs_mnt}..."
-    case $(basename ${file}) in
-        *.squashfs)
-            sudo unsquashfs -f -d ${rootfs_mnt} ${file} || panic "unsquashfs failed"
-            ;;
-
-        *.tar.gz)
-            pv ${file} \
-                | tar xzf - --strip-component=1 -C ${rootfs_mnt} \
-                    || panic "E: error while extracting"
-            ;;
-
-        debian-*.raw)
-            tmpdir=$(mktemp -d) && mkdir -p ${tmpdir}
-            sudo losetup -fP ${file} \
-                && LOOPBACK=$(get_lookback_device ${file}) \
-                && sudo mount ${LOOPBACK}p1 ${tmpdir} \
-                && sudo cp -a ${tmpdir}/* ${rootfs_mnt} \
-                && sudo umount ${tmpdir} \
-                && sudo losetup -D ${LOOPBACK}
-            rm -rf ${tmpdir} ${file}
-            ;;
-    esac
-}
-
 do_copy_custom_files_by_dir() {
     local dirs=""
 
@@ -533,17 +504,43 @@ do_url_of_cloudimage() {
 }
 
 do_create_image() {
-    local baseimage=${1}
+    local target=${1}
     local cloudimage=${2}
 
-    [ "x${baseimage}" = "x" ] && panic "no given image file name"
-    [ "x${cloudimage}" = "x" ] && panic "no given cloudimage"
+    [ "x${target}" = "x" ] && panic "no given image file name"
+    [ -f ${cloudimage} ] || panic "E: missing cloudimage ${cloudimage}"
 
-    umount ${boot_mnt} ${rootfs_mnt} 2>/dev/null
-    rm -rf ${boot_mnt} ${rootfs_mnt}
-    mkdir -p ${boot_mnt} ${rootfs_mnt}
+    umount ${boot_mnt} ${rootfs_mnt} \
+        && rm -rf ${boot_mnt} ${rootfs_mnt}
+    mkdir -p ${boot_mnt} ${rootfs_mnt} 2>/dev/null
 
-    do_extract ${cloudimage}
+    #
+    # Expand orignal Cloud Image to raw file system before customizing
+    #
+    echo "I: extracting ${cloudimage} to ${rootfs_mnt}..."
+    case $(basename ${cloudimage}) in
+        *.squashfs)
+            sudo unsquashfs -f -d ${rootfs_mnt} ${cloudimage} || panic "unsquashfs failed"
+            ;;
+
+        *.tar.gz)
+            pv ${cloudimage} \
+                | tar xzf - --strip-component=1 -C ${rootfs_mnt} \
+                    || panic "E: error while extracting"
+            ;;
+
+        debian-*.raw)
+            tmpdir=$(mktemp -d) && mkdir -p ${tmpdir}
+            sudo losetup -fP ${cloudimage} \
+                && LOOPBACK=$(get_lookback_device ${cloudimage}) \
+                && sudo mount ${LOOPBACK}p1 ${tmpdir} \
+                && sudo cp -a ${tmpdir}/* ${rootfs_mnt} \
+                && sudo umount ${tmpdir} \
+                && sudo losetup -D ${LOOPBACK}
+            rm -rf ${tmpdir} ${cloudimage}
+            ;;
+    esac
+
     do_mount
     do_preinstall
     do_run_fixups
@@ -551,10 +548,11 @@ do_create_image() {
     do_postinstall
     do_cleanup
     do_unmount
+
     if [ "x${LIVESYSTEM}" = "xtrue" ]; then
-        do_create_squashfs ${baseimage}
+        do_create_squashfs ${target}
     else
-        do_create_partition ${baseimage} 256
+        do_create_partition ${target} 256
     fi
 }
 
