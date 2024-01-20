@@ -532,42 +532,6 @@ do_url_of_cloudimage() {
     echo ${file}
 }
 
-do_download_cloudimage() {
-    local url=${1}
-    local cloudimage=${2}
-    local download=true
-
-    [ "x${url}" = "x" ] && panic "unknown url file"
-    [ "x${cloudimage}" = "x" ] && panic "unknown cloudimage file"
-
-    case $(basename ${cloudimage}) in
-        *.tar.gz)
-            if [ -f ${cloudimage} ]; then
-                wget ${url%.tar.gz}.md5sums.txt --quiet -O .foo.md5sums.txt || \
-                    panic "failed to download MD5SUM file '${rul}'"
-                hash_remote=$(cat .foo.md5sums.txt | \
-                    grep $(basename ${cloudimage}) | awk '{print $1}')
-                hash_local=$(md5sum ${cloudimage} | awk '{print $1}')
-                if [ "${hash_remote}" = "${hash_local}" ]; then
-                    download=false
-                else
-                    rm -f ${cloudimage}
-                fi
-            fi
-            ;;
-        *)
-            if [ -f ${cloudimage} ]; then
-                download=false
-            fi
-			;;
-    esac
-
-    if [ "${download}" = true ]; then
-        wget ${url} -O ${cloudimage} || \
-            panic "failed to download cloudimage '${url}'"
-    fi
-}
-
 do_create_image() {
     local baseimage=${1}
     local cloudimage=${2}
@@ -665,8 +629,13 @@ do_custom_installer() {
     url=$(do_url_of_cloudimage ${ARCH} ${DISTRO} ${FLAVOUR})
     [ "x${url}" = "x" ] && panic "E: invalid URL - ${url}"
 
+    #
+    # Download official Cloud Image
+    #
+    echo "I: download official Cloud Image"
     local cloudimage=${download_dir}/$(basename ${url})
-    do_download_cloudimage ${url} ${cloudimage}
+    wget ${url} -O ${cloudimage} \
+        || panic "failed to download cloudimage '${url}'"
 
     #
     # Extract raw Cloud Image
