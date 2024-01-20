@@ -34,7 +34,11 @@ do_unmount() {
 cleanup() {
     do_unmount
 
-    umount -f ${boot_mnt} ${rootfs_mnt} 2>/dev/null
+    for dir in ${boot_mnt} ${rootfs_mnt}; do
+        mountpoint -q ${dir} 2>/dev/null \
+            && umount ${dir} && rm -rf ${dir}
+    done
+
     if [ "x${opt_keep_builddir}" != "xtrue" ]; then
         rm -rf --one-file-system ${boot_mnt} ${rootfs_mnt}
     fi
@@ -340,7 +344,8 @@ do_create_partition() {
             | dd of=${disk} >/dev/null
     else
         for d in `readlink -f ${disk}*`; do
-            umount -f ${d} 2>/dev/null
+            mountpoint -q ${d} 2>/dev/null \
+                && umount ${d}
         done
 
         echo "I: removing the current partition table in '${disk}'"
@@ -528,8 +533,11 @@ do_create_image() {
     [ "x${target}" = "x" ] && panic "no given image file name"
     [ -f ${cloudimage} ] || panic "E: missing cloudimage ${cloudimage}"
 
-    umount ${boot_mnt} ${rootfs_mnt} \
-        && rm -rf ${boot_mnt} ${rootfs_mnt}
+    for dir in ${boot_mnt} ${rootfs_mnt}; do
+        mountpoint -q ${dir} 2>/dev/null \
+            && umount ${dir} && rm -rf ${dir}
+    done
+
     mkdir -p ${boot_mnt} ${rootfs_mnt} 2>/dev/null
 
     #
