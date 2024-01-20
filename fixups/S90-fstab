@@ -1,7 +1,12 @@
 #!/bin/sh
 
-sed -i "/ \/boot /d" /etc/fstab
-sed -i "/ \/ /d" /etc/fstab
+if [ -f /etc/fstab ]; then
+	# Remove BOOT/ROOTFS mount points
+	sed -i "/ \/boot /d" /etc/fstab
+	sed -i "/ \/ /d" /etc/fstab
+	# Remove EFI partition not to mount
+	sed -i "/\/boot\/efi/d" /etc/fstab
+fi
 
 if [ "x@@DEFAULT_DEV_ROOTFS@@" != "x" ]; then
 	cat <<__EOF | tee -a /etc/fstab >/dev/null
@@ -14,8 +19,5 @@ if [ "x@@DEFAULT_DEV_BOOT@@" != "x" ]; then
 UUID="@@DEFAULT_DEV_BOOT@@" /boot ext2 rw,relatime,errors=continue 0 0
 __EOF
 fi
-
-# Remove EFI partition not to mount
-sed -i "/\/boot\/efi/d" /etc/fstab
 
 update-initramfs -u

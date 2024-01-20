@@ -242,7 +242,10 @@ do_mount() {
 }
 
 get_uuid_by_path() {
-    grep " ${1} " ${rootfs_mnt}/etc/fstab | cut -d' ' -f1 | cut -d'=' -f2 | tr -d '"'
+    if [ -f ${rootfs_mnt}/etc/fstab ]; then
+        grep " ${1} " ${rootfs_mnt}/etc/fstab \
+            | cut -d' ' -f1 | cut -d'=' -f2 | tr -d '"'
+    fi
 }
 
 do_create_squashfs() {
