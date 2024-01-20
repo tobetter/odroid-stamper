@@ -116,15 +116,27 @@ get_packages() {
     [ -f ${1} ] && cat ${1} | awk -F '#|;' '{print $1}'
 }
 
-get_flavour_packages() {
+get_package_list() {
     local pkgs=""
 
-    pkgs="${pkgs} $(get_packages distro/${DISTRO}/common/packages)"
-    pkgs="${pkgs} $(get_packages distro/${DISTRO}/${FLAVOUR}/packages)"
-    pkgs="${pkgs} $(get_packages boards/${BOARD}/packages)"
-    pkgs="${pkgs} $(get_packages boards/${BOARD}/distro/${DISTRO}/${FLAVOUR}/packages)"
-    [ -f custom/${CUSTOMOS}/packages ] &&
-        pkgs="${pkgs} $(get_packages custom/${CUSTOMOS}/packages)"
+    local dirs="distro/${DISTRO}/common"
+    dirs="${dirs} distro/${DISTRO}/${FLAVOUR}"
+    dirs="${dirs} boards/${BOARD}"
+    dirs="${dirs} boards/${BOARD}/distro/${DISTRO}/${FLAVOUR}"
+    dirs="${dirs} custom/${CUSTOMOS}"
+
+    for dir in ${dirs}; do
+        if [ -f ${dir}/${1} ]; then
+            list=$(cat ${dir}/${1} | awk -F '#|;' '{print $1}')
+            pkgs="${pkgs} ${list}"
+        fi
+    done
+
+    echo ${pkgs}
+}
+
+get_flavour_packages() {
+    local pkgs=$(get_package_list packages)
 
     if [ "x${LIVESYSTEM}" = "xtrue" ]; then
         pkgs="${pkgs} casper"
@@ -134,14 +146,7 @@ get_flavour_packages() {
 }
 
 get_blacklist_packages() {
-    local pkgs=""
-
-    pkgs="${pkgs} $(get_packages distro/${DISTRO}/common/blacklist)"
-    pkgs="${pkgs} $(get_packages distro/${DISTRO}/${FLAVOUR}/blacklist)"
-    pkgs="${pkgs} $(get_packages boards/${BOARD}/blacklist)"
-    pkgs="${pkgs} $(get_packages boards/${BOARD}/distro/${DISTRO}/${FLAVOUR}/blacklist)"
-    [ -f custom/${CUSTOMOS}/blacklist ] &&
-        pkgs="${pkgs} $(get_packages custom/${CUSTOMOS}/blacklist)"
+    local pkgs=$(get_package_list blacklist)
 
     echo ${pkgs} | tr " " "\n" | sort | uniq | tr "\n" " "
 }
