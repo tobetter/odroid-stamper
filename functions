@@ -380,6 +380,25 @@ do_extract() {
     esac
 }
 
+do_copy_custom_files_by_dir() {
+    local dirs=""
+
+    [ "x${1}" = "x" ] && panic "E: missing source directory of custom files"
+    [ "x${2}" = "x" ] && panic "E: missing target directory for custom files"
+
+    dirs="${dirs} ${TOPDIR}"
+    dirs="${dirs} ${WORKDIR}"
+    dirs="${dirs} ${TOPDIR}/distro/${DISTRO}/common"
+    dirs="${dirs} ${TOPDIR}/distro/${DISTRO}/${FLAVOUR}"
+    dirs="${dirs} ${TOPDIR}/boards/${BOARD}"
+    dirs="${dirs} ${TOPDIR}/boards/${BOARD}/distro/${DISTRO}"
+    dirs="${dirs} ${TOPDIR}/custom/${CUSTOMOS}"
+
+    for dir in ${dirs}; do
+        [ -d ${dir}/${1} ] && rsync -a ${dir}/${1}/ ${2}/
+    done
+}
+
 do_preinstall() {
     local UUID_BOOT=$(uuidgen)
     local UUID_ROOT=$(uuidgen)
@@ -387,16 +406,7 @@ do_preinstall() {
     echo "I: running preinstall scripts and copy default files..."
     mkdir -p ${rootfs_mnt}${fixups_dir}
 
-    [ -d ${TOPDIR}/fixups ] && rsync -a ${TOPDIR}/fixups/* ${rootfs_mnt}/${fixups_dir}
-    [ -d ${WORKDIR}/fixups ] && rsync -a ${WORKDIR}/fixups/* ${rootfs_mnt}/${fixups_dir}
-    [ -d ${TOPDIR}/distro/${DISTRO}/${FLAVOUR}/fixups ] \
-        && rsync -a ${TOPDIR}/distro/${DISTRO}/${FLAVOUR}/fixups/* ${rootfs_mnt}/${fixups_dir}
-    [ -d ${TOPDIR}/boards/${BOARD}/fixups ] \
-        && rsync -a ${TOPDIR}/boards/${BOARD}/fixups/* ${rootfs_mnt}/${fixups_dir}
-    [ -d ${TOPDIR}/boards/${BOARD}/distro/${DISTRO}/fixups ] \
-        && rsync -a ${TOPDIR}/boards/${BOARD}/distro/${DISTRO}/fixups/* ${rootfs_mnt}/${fixups_dir}
-    [ -d ${TOPDIR}/custom/${CUSTOMOS}/fixups ] \
-        && rsync -a ${TOPDIR}/custom/${CUSTOMOS}/fixups/* ${rootfs_mnt}/${fixups_dir}
+    do_copy_custom_files_by_dir fixups ${rootfs_mnt}${fixups_dir}
 
     case ${FLAVOUR} in
         *-desktop*)
@@ -469,19 +479,9 @@ get_install_fixups() {
     echo `ls -A1 ${rootfs_mnt}${fixups_dir}/S* | sort`
 }
 
-do_copy_overlays() {
-    [ -d ${1} ] && rsync -a ${1} ${rootfs_mnt}/overlay/
-}
-
 do_run_fixups() {
     mkdir -p ${rootfs_mnt}/overlay
-
-    do_copy_overlays ${TOPDIR}/overlay/
-    do_copy_overlays ${WORKDIR}/overlay/
-    do_copy_overlays ${TOPDIR}/boards/${BOARD}/distro/${DISTRO}/overlay/
-    do_copy_overlays ${TOPDIR}/distro/${DISTRO}/common/overlay/
-    do_copy_overlays ${TOPDIR}/distro/${DISTRO}/${FLAVOUR}/overlay/
-    do_copy_overlays ${TOPDIR}/custom/${CUSTOMOS}/overlay/
+    do_copy_custom_files_by_dir overlay ${rootfs_mnt}/overlay
 
     for fixup in $(get_install_fixups); do
         chroot ${rootfs_mnt} ${QEMU_BINARY} \
