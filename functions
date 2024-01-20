@@ -7,18 +7,18 @@ do_unmount() {
 
     unmount_error=""
 
-    mountpoint ${rootfs_mnt}/sys >/dev/null     && { umount ${rootfs_mnt}/sys     || { echo "umount sys failed" ; unmount_error=1 ; } ; }
-    mountpoint ${rootfs_mnt}/proc >/dev/null    && { umount ${rootfs_mnt}/proc    || { echo "umount proc failed" ; unmount_error=1 ; } ; }
-    mountpoint ${rootfs_mnt}/dev/pts >/dev/null && { umount ${rootfs_mnt}/dev/pts || { echo "umount dev/pts failed" ; unmount_error=1 ; } ; }
-    mountpoint ${rootfs_mnt}/dev >/dev/null     && { umount ${rootfs_mnt}/dev     || { echo "umount dev failed" ; unmount_error=1 ; } ; }
-    mountpoint ${rootfs_mnt}/boot >/dev/null    && { umount ${rootfs_mnt}/boot    || { echo "umount boot failed" ; unmount_error=1 ; } ; }
+    echo "I: unmounting pseudo directories in ${rootfs_mnt}..."
+    dirs="sys proc dev/pts dev boot"
+    for dir in ${dirs}; do
+        mountpoint -q ${rootfs_mnt}/${dir} 2>/dev/null \
+            && { umount ${rootfs_mnt}/${dir} \
+                || { echo "umount ${dir} failed"; unmount_error=1; }; \
+            }
+    done
 
-    echo "I: unmounting devices..."
+    echo "I: cleanup loopback device ${LOOPBACK}..."
     if [ ! -b ${TARGET_DEVICE} ]; then
-        if [ "x${LOOPBACK}" != "x" ]; then
-            echo "cleanup loopback device ${LOOPBACK}"
-            losetup -d ${LOOPBACK} || ( echo "losetup -d failed" ; unmount_error=1 )
-        fi
+        losetup -d ${LOOPBACK} 2>/dev/null
     fi
 
     if [ -f ${TOPDIR}/custom/${CUSTOMOS}/hooks/umount ]; then
@@ -34,15 +34,11 @@ do_unmount() {
 cleanup() {
     do_unmount
 
-    if [ -f ${TOPDIR}/custom/${CUSTOMOS}/hooks/umount ]; then
-        . ${TOPDIR}/custom/${CUSTOMOS}/hooks/umount
-    fi
-
     umount -f ${boot_mnt} ${rootfs_mnt} 2>/dev/null
     if [ "x${opt_keep_builddir}" != "xtrue" ]; then
         rm -rf --one-file-system ${boot_mnt} ${rootfs_mnt}
     fi
-    if [ "$(ls ${build_dir} | wc -l)" = "0" ]; then
+    if [ "$(ls ${build_dir} 2>/dev/null | wc -l)" = "0" ]; then
         rm -rf --one-file-system ${build_dir}
     fi
 }
