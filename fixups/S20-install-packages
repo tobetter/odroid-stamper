@@ -14,7 +14,6 @@ apt update --allow-releaseinfo-change \
 apt install @@DEFAULT_APT_OPTIONS@@ \
 	odroid-base \
 	rsync \
-	network-manager \
 	@@DEFAULT_FLAVOUR_PACKAGES@@ \
 	linux-image-@@DEFAULT_KERNEL_PACKAGE@@ \
 	@@DEFAULT_BOOTSCRIPT_PACKAGE@@ || exit 1
