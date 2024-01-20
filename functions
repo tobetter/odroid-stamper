@@ -425,8 +425,6 @@ do_preinstall() {
     DEFAULT_KERNEL_PACKAGE=$(get_kernel_package)
     [ ! "x${opt_kernel_package}" = "x" ] && DEFAULT_KERNEL_PACKAGE=${opt_kernel_package}
 
-    echo ${DEFAULT_KERNEL_PACKAGE}
-
     FIXUPS=`ls -A1 ${rootfs_mnt}${fixups_dir}/*`
     for fixup in ${FIXUPS}; do
         sed -i \
