@@ -69,11 +69,7 @@ do_menu_board() {
 do_menu_distro() {
     CHOICE=$(dialog --clear --title "Ubuntu/Debian distribution" \
         --menu "X" 15 70 10 \
-        "bionic" "Ubuntu Bionic (18.04)" \
-        "disco" "Ubuntu Disco (19.04)" \
         "focal" "Ubuntu Focal (20.04)" \
-        "groovy" "Ubuntu Groovy (20.10)" \
-        "hirsute" "Ubuntu Hirsute (21.04)" \
         "jammy" "Ubuntu Jammy (22.04)" \
         "mantic" "Ubuntu Mantic (23.10)" \
         "buster" "Debian Buster" \

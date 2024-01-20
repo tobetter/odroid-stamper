@@ -89,7 +89,7 @@ __EOF
 
 osname() {
     case $1 in
-        bionic | disco | focal | groovy | hirsute | jammy | mantic)
+        focal | jammy | mantic)
             echo "ubuntu"
             ;;
         buster | bullseye | bookworm)
@@ -103,20 +103,8 @@ osname() {
 
 osversion () {
     case $1 in
-        bionic)
-            echo "18.04"
-            ;;
-        disco)
-            echo "19.04"
-            ;;
         focal)
             echo "20.04"
-            ;;
-        groovy)
-            echo "20.10"
-            ;;
-        hirsute)
-            echo "21.04"
             ;;
         jammy)
             echo "22.04"
