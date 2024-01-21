@@ -1,0 +1,7 @@
+#!/bin/sh
+
+sed -i "s/^User=.*/User=@@DEFAULT_USER@@/g" \
+	/etc/systemd/system/weston.service
+
+chmod 644 /etc/systemd/system/weston.service
+systemctl enable weston
