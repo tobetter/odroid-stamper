@@ -6,6 +6,9 @@ if [ -f /etc/fstab ]; then
 	sed -i "/ \/ /d" /etc/fstab
 	# Remove EFI partition not to mount
 	sed -i "/\/boot\/efi/d" /etc/fstab
+
+	# Remove yet another root mount point via 'cloud-img-root'
+	sed -i "/cloudimg-rootfs/d" /etc/fstab
 fi
 
 if [ "x@@DEFAULT_DEV_ROOTFS@@" != "x" ]; then
