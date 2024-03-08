@@ -23,4 +23,8 @@ UUID="@@DEFAULT_DEV_BOOT@@" /boot ext2 rw,relatime,errors=continue 0 0
 __EOF
 fi
 
+# Temporary create UUID of root file system since 'flash-kernel' checks it
+# to add 'root=UUID...' to initramfs.
+touch /dev/disk/by-uuid/@@DEFAULT_DEV_ROOTFS@@
+
 update-initramfs -u
