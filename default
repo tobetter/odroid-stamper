@@ -89,7 +89,7 @@ __EOF
 
 osname() {
     case $1 in
-        focal | jammy | mantic)
+        focal | jammy | mantic | noble)
             echo "ubuntu"
             ;;
         buster | bullseye | bookworm)
@@ -111,6 +111,9 @@ osversion () {
             ;;
         mantic)
             echo "23.10"
+            ;;
+        noble)
+            echo "24.04"
             ;;
         buster)
             echo "buster"

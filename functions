@@ -519,7 +519,7 @@ do_url_of_cloudimage() {
             ;;
 
         # Ubuntu Cloud Images
-        focal | jammy | mantic)
+        focal | jammy | mantic | noble)
             file="https://cloud-images.ubuntu.com/${codename}/current/${codename}-server-cloudimg-${arch}.squashfs"
             ;;
     esac
