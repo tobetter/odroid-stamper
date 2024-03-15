@@ -8,7 +8,7 @@ do_unmount() {
     unmount_error=""
 
     echo "I: unmounting pseudo directories in ${rootfs_mnt}..."
-    dirs="sys proc dev/pts dev boot"
+    dirs="sys/firmware/efi/efivars sys proc dev/pts dev boot"
     for dir in ${dirs}; do
         mountpoint -q ${rootfs_mnt}/${dir} 2>/dev/null \
             && { umount ${rootfs_mnt}/${dir} \
