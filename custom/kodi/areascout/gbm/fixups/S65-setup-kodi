@@ -64,3 +64,6 @@ echo 'export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$UID/bus"' >> /home/@
 
 # Set default Pulseaudio output sink for Kodi
 sed -i 's|#set-default-sink output|set-default-sink 0|g' /etc/pulse/default.pa
+
+# Do not exit Pulseaudio client if unused
+sed -i 's/; exit-idle-time = 20/exit-idle-time = -1/g' /etc/pulse/daemon.conf
