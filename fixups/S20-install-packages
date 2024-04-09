@@ -13,6 +13,7 @@ apt update --allow-releaseinfo-change \
 	&& apt upgrade -y
 apt install @@DEFAULT_APT_OPTIONS@@ \
 	odroid-base \
+	flash-kernel \
 	rsync \
 	@@DEFAULT_FLAVOUR_PACKAGES@@ \
 	linux-image-@@DEFAULT_KERNEL_PACKAGE@@ \
